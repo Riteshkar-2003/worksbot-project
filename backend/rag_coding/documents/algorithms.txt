@@ -1,0 +1,17 @@
+Important coding interview algorithms include:
+
+Linear Search
+Binary Search
+Bubble Sort
+Merge Sort
+Quick Sort
+Depth First Search
+Breadth First Search
+Dynamic Programming
+Greedy Algorithms
+Two Pointer
+Sliding Window
+Hashing
+
+Candidates should understand the time and space
+complexity of the algorithms.

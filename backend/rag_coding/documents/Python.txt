@@ -1,0 +1,12 @@
+Python is a high-level programming language.
+
+Important coding topics include:
+variables, functions, lists, tuples, dictionaries,
+sets, loops, recursion, classes and exceptions.
+
+Common interview problems include:
+array manipulation, string processing, searching,
+sorting, hash maps and recursion.
+
+Python dictionary lookup generally provides
+average O(1) lookup complexity.
