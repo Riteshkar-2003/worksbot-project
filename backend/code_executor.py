@@ -38,13 +38,13 @@ _SUBMISSIONS_ENDPOINT = f"{JUDGE0_URL}/submissions"
 JUDGE0_HTTP_TIMEOUT: float = float(os.getenv("JUDGE0_HTTP_TIMEOUT", "10"))
 
 # Whether to try Judge0 and whether to allow automatic local fallback
-USE_JUDGE0: bool = os.getenv("USE_JUDGE0", "true").lower() in ("true", "1", "yes")
+USE_JUDGE0: bool = os.getenv("USE_JUDGE0", "false").lower() in ("true", "1", "yes")
 ENABLE_LOCAL_FALLBACK: bool = os.getenv("ENABLE_LOCAL_FALLBACK", "true").lower() in ("true", "1", "yes")
 
 # State tracking for Judge0 reachability to prevent blocking roundtrips when down
 _judge0_healthy: Optional[bool] = None
 _judge0_last_check: float = 0.0
-JUDGE0_COOLDOWN_SECONDS: float = 30.0  # re-probe Judge0 every 30s when offline
+JUDGE0_COOLDOWN_SECONDS: float = 300.0  # re-probe Judge0 every 5 mins when offline
 
 # ── Language ID mapping (Judge0 language IDs) ────────────────────────────────
 LANGUAGE_IDS: dict[str, int] = {
@@ -133,6 +133,21 @@ def _find_binary(binary_names: list[str]) -> Optional[str]:
         r"C:\msys64\usr\bin",
         r"C:\w64devkit\bin",
     ]
+
+    # 3b. Dynamically discover Java JDK installations (Adoptium, Microsoft, Oracle)
+    java_base_dirs = [
+        r"C:\Program Files\Eclipse Adoptium",
+        r"C:\Program Files\Microsoft",
+        r"C:\Program Files\Java",
+        r"C:\Program Files (x86)\Java",
+    ]
+    for jbase in java_base_dirs:
+        if os.path.isdir(jbase):
+            for entry in sorted(os.listdir(jbase), reverse=True):
+                if "jdk" in entry.lower() or "openjdk" in entry.lower():
+                    bin_dir = os.path.join(jbase, entry, "bin")
+                    if os.path.isdir(bin_dir) and bin_dir not in std_dirs:
+                        std_dirs.append(bin_dir)
     for d in std_dirs:
         for b in binary_names:
             candidate = os.path.join(d, f"{b}.exe")
@@ -398,13 +413,16 @@ def _run_local_java(code: str, stdin: str, timeout: int = 5) -> dict:
         with open(source_path, "w", encoding="utf-8") as f:
             f.write(code)
 
+        # Use a generous compile timeout (compilation can be slow on Windows)
+        compile_timeout = max(timeout, 30)
+
         try:
             # 1. Compile with javac
             compile_proc = subprocess.run(
                 [javac_bin, f"{class_name}.java"],
                 capture_output=True,
                 text=True,
-                timeout=timeout,
+                timeout=compile_timeout,
                 encoding="utf-8",
                 errors="replace",
                 env=env,
@@ -497,13 +515,16 @@ def _run_local_c_cpp(code: str, language: str, stdin: str, timeout: int = 5) -> 
         with open(src_path, "w", encoding="utf-8") as f:
             f.write(code)
 
+        # Use a generous compile timeout (GCC/G++ can be slow on Windows due to AV scanning)
+        compile_timeout = max(timeout, 30)
+
         try:
             # 1. Compile
             compile_proc = subprocess.run(
                 [compiler, "-O2", src_path, "-o", exe_path],
                 capture_output=True,
                 text=True,
-                timeout=timeout,
+                timeout=compile_timeout,
                 encoding="utf-8",
                 errors="replace",
                 env=env,

@@ -213,16 +213,7 @@ export default function Dashboard() {
     // LOGOUT
 
 
-    const handleLogout = () => {
-        localStorage.removeItem("user");
-
-        sessionStorage.removeItem("resumeData");
-        sessionStorage.removeItem("resumeFileName");
-        sessionStorage.removeItem("difficulty");
-        sessionStorage.removeItem("codingReport");
-
-        router.push("/login");
-    };
+    
 
 
     // START INTERVIEW
@@ -583,26 +574,10 @@ export default function Dashboard() {
 
                     <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5">
                         {/* RAISE QUERY TAB */}
-                        <button
-                            type="button"
-                            onClick={() => setIsQueryModalOpen(true)}
-                            className="flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50/80 px-3 py-2 text-xs font-semibold text-violet-700 transition hover:bg-violet-100 shadow-sm"
-                            title="Facing issues or have a query? Click to contact support."
-                        >
-                            <MessageSquarePlus className="h-3.5 w-3.5" />
-                            <span className="hidden sm:inline">Raise Query</span>
-                        </button>
+                        
 
                         {/* ADMIN PORTAL LINK */}
-                        <button
-                            type="button"
-                            onClick={() => router.push("/admin")}
-                            className="hidden md:flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 shadow-sm"
-                            title="Open Admin Dashboard"
-                        >
-                            <ShieldCheck className="h-3.5 w-3.5 text-violet-600" />
-                            <span>Admin Portal</span>
-                        </button>
+                       
 
                         {user ? (
                             <div className="flex items-center gap-2 sm:gap-3">
@@ -615,29 +590,7 @@ export default function Dashboard() {
                                     <FaArrowRight className="text-xs sm:text-sm" />
                                 </button>
                                 {/* LOGOUT */}
-                                <button
-                                    onClick={handleLogout}
-                                    title="Logout"
-                                    className="
-                flex
-                h-9
-                w-9
-                shrink-0
-                items-center
-                justify-center
-                rounded-xl
-                text-slate-500
-                transition
-
-                hover:bg-red-50
-                hover:text-red-600
-
-                sm:h-10
-                sm:w-10
-            "
-                                >
-                                    <FaSignOutAlt size={16} />
-                                </button>
+                                
 
                             </div>
                         ) : (

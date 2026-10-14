@@ -112,7 +112,7 @@ export default function AdminDashboardPage() {
         try {
           const storedAdmin = localStorage.getItem("admin_user");
           if (storedAdmin) setAdminUser(JSON.parse(storedAdmin));
-        } catch {}
+        } catch { }
         setAuthChecked(true);
         loadAllData();
       } catch (err) {
@@ -129,7 +129,7 @@ export default function AdminDashboardPage() {
   const handleAdminLogout = async () => {
     try {
       await adminLogout();
-    } catch {}
+    } catch { }
     localStorage.removeItem("admin_token");
     localStorage.removeItem("admin_user");
     router.replace("/admin/login");
@@ -284,23 +284,23 @@ export default function AdminDashboardPage() {
 
       {/* ADMIN NAVIGATION HEADER */}
       <header className="sticky top-0 z-40 border-b border-gray-800/80 bg-[#12131d]/90 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
           {/* Brand */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-500 font-black text-white shadow-lg shadow-violet-900/30">
-              <ShieldCheck className="h-5 w-5" />
+          <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-500 font-black text-white shadow-lg shadow-violet-900/30 sm:h-10 sm:w-10">
+              <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base font-bold text-white tracking-tight sm:text-lg">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="truncate text-sm font-bold text-white tracking-tight sm:text-base lg:text-lg">
                   AI Interview Platform
                 </h1>
                 <span className="rounded-md bg-violet-500/20 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-violet-300 border border-violet-500/30">
                   Admin Portal
                 </span>
               </div>
-              <p className="text-[11px] text-gray-400">
-                Candidate Management, Oversight & Concern Resolution
+              <p className="hidden text-[11px] text-gray-400 sm:block">
+                Candidate Management, Oversight &amp; Concern Resolution
               </p>
             </div>
           </div>
@@ -325,24 +325,12 @@ export default function AdminDashboardPage() {
               <span className="hidden sm:inline">Candidate Dashboard</span>
             </button>
 
-            {/* Admin identity badge */}
-            {adminUser && (
-              <div className="hidden sm:flex items-center gap-2 rounded-xl border border-violet-800/40 bg-violet-950/30 px-3 py-2">
-                <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-violet-600/50 text-xs font-bold text-white">
-                  {(adminUser.username || "A")[0].toUpperCase()}
-                </div>
-                <span className="text-xs font-semibold text-violet-200">{adminUser.username}</span>
-              </div>
-            )}
-
-            {/* Logout button */}
             <button
-              id="admin-logout-btn"
-              onClick={handleAdminLogout}
-              className="flex items-center gap-1.5 rounded-xl bg-red-900/30 border border-red-800/40 px-3.5 py-2 text-xs font-bold text-red-300 shadow-md transition hover:bg-red-900/60 hover:text-red-200"
+              onClick={() => router.push("/profile")}
+              className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-violet-900/40 transition hover:from-violet-500 hover:to-indigo-500"
             >
-              <X className="h-3.5 w-3.5" />
-              <span>Logout</span>
+              <User className="h-3.5 w-3.5" />
+              <span>User Profile</span>
             </button>
           </div>
         </div>
@@ -364,23 +352,21 @@ export default function AdminDashboardPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition whitespace-nowrap ${
-                    isActive
+                  className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold transition whitespace-nowrap sm:px-4 ${isActive
                       ? "bg-violet-600 text-white shadow-md shadow-violet-900/50"
                       : "text-gray-400 hover:bg-gray-800/60 hover:text-gray-200"
-                  }`}
+                    }`}
                 >
-                  <Icon className="h-4 w-4" />
-                  <span>{tab.label}</span>
+                  <Icon className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">{tab.label}</span>
                   {tab.badge !== undefined && tab.badge > 0 && (
                     <span
-                      className={`ml-1 rounded-full px-1.5 py-0.2 text-[10px] font-extrabold ${
-                        isActive
+                      className={`ml-1 rounded-full px-1.5 py-0.2 text-[10px] font-extrabold ${isActive
                           ? "bg-white/20 text-white"
                           : tab.id === "queries"
-                          ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
-                          : "bg-gray-800 text-gray-300"
-                      }`}
+                            ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                            : "bg-gray-800 text-gray-300"
+                        }`}
                     >
                       {tab.badge}
                     </span>
@@ -494,11 +480,10 @@ export default function AdminDashboardPage() {
                     <button
                       key={f.id}
                       onClick={() => setQueryStatusFilter(f.id)}
-                      className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition ${
-                        queryStatusFilter === f.id
+                      className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition ${queryStatusFilter === f.id
                           ? "bg-gray-700 text-white shadow-inner"
                           : "bg-gray-900/80 text-gray-400 hover:bg-gray-800 hover:text-gray-200 border border-gray-800"
-                      }`}
+                        }`}
                     >
                       <span>{f.label}</span>
                       <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-gray-900 ${f.color || "text-gray-300"}`}>
@@ -551,8 +536,8 @@ export default function AdminDashboardPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800/60 font-sans">
-                      {filteredQueries.map((q) => (
-                        <tr key={q.id} className="transition hover:bg-gray-800/30">
+                      {filteredQueries.map((q, qIdx) => (
+                        <tr key={`query-${q.id}-${qIdx}`} className="transition hover:bg-gray-800/30">
                           {/* ID & Candidate */}
                           <td className="px-5 py-4">
                             <div className="font-mono text-violet-400 font-bold">#{q.id}</div>
@@ -582,13 +567,12 @@ export default function AdminDashboardPage() {
                           {/* Urgency */}
                           <td className="px-5 py-4">
                             <span
-                              className={`rounded-lg px-2.5 py-1 text-[11px] font-bold ${
-                                q.urgency === "High"
+                              className={`rounded-lg px-2.5 py-1 text-[11px] font-bold ${q.urgency === "High"
                                   ? "bg-red-500/20 text-red-300 border border-red-500/30"
                                   : q.urgency === "Medium"
-                                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                                  : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                              }`}
+                                    ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                                    : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                                }`}
                             >
                               {q.urgency}
                             </span>
@@ -700,11 +684,10 @@ export default function AdminDashboardPage() {
                     <div
                       className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full"
                       style={{
-                        width: `${
-                          stats?.total_queries
+                        width: `${stats?.total_queries
                             ? Math.round((stats.resolved_queries / stats.total_queries) * 100)
                             : 100
-                        }%`,
+                          }%`,
                       }}
                     />
                   </div>
@@ -777,8 +760,8 @@ export default function AdminDashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800/60 font-sans">
-                  {users.map((u) => (
-                    <tr key={u.id} className="transition hover:bg-gray-800/30">
+                  {users.map((u, uIdx) => (
+                    <tr key={`user-${u.id}-${uIdx}`} className="transition hover:bg-gray-800/30">
                       <td className="px-5 py-4 font-mono font-bold text-violet-400">#{u.id}</td>
                       <td className="px-5 py-4 font-bold text-white text-xs">{u.name}</td>
                       <td className="px-5 py-4 text-gray-300 font-mono">{u.email}</td>
@@ -850,8 +833,8 @@ export default function AdminDashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800/60 font-sans">
-                  {interviews.map((rep) => (
-                    <tr key={rep.report_id} className="transition hover:bg-gray-800/30">
+                  {interviews.map((rep, rIdx) => (
+                    <tr key={`interview-${rep.report_id}-${rIdx}`} className="transition hover:bg-gray-800/30">
                       <td className="px-5 py-4 font-mono font-bold text-indigo-400">#{rep.report_id}</td>
                       <td className="px-5 py-4">
                         <div className="font-bold text-white">{rep.user_name || `User #${rep.user_id}`}</div>
@@ -915,8 +898,8 @@ export default function AdminDashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800/60 font-sans">
-                  {codingSubs.map((sub) => (
-                    <tr key={sub.submission_id} className="transition hover:bg-gray-800/30">
+                  {codingSubs.map((sub, sIdx) => (
+                    <tr key={`coding-${sub.submission_id}-${sIdx}`} className="transition hover:bg-gray-800/30">
                       <td className="px-5 py-4 font-mono font-bold text-cyan-400">#{sub.submission_id}</td>
                       <td className="px-5 py-4">
                         <div className="font-bold text-white">{sub.user_name || `User #${sub.user_id}`}</div>
@@ -931,11 +914,10 @@ export default function AdminDashboardPage() {
                       </td>
                       <td className="px-5 py-4">
                         <span
-                          className={`rounded-lg px-2.5 py-1 text-[11px] font-bold ${
-                            sub.execution_status === "Passed"
+                          className={`rounded-lg px-2.5 py-1 text-[11px] font-bold ${sub.execution_status === "Passed"
                               ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
                               : "bg-red-500/20 text-red-300 border border-red-500/30"
-                          }`}
+                            }`}
                         >
                           {sub.execution_status}
                         </span>
@@ -999,8 +981,8 @@ export default function AdminDashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800/60 font-sans">
-                  {resumes.map((res) => (
-                    <tr key={res.id} className="transition hover:bg-gray-800/30">
+                  {resumes.map((res, rIdx) => (
+                    <tr key={`resume-${res.id}-${rIdx}`} className="transition hover:bg-gray-800/30">
                       <td className="px-5 py-4 font-mono font-bold text-purple-400">#{res.id}</td>
                       <td className="px-5 py-4">
                         <div className="font-bold text-white">{res.user_name || `User #${res.user_id}`}</div>
@@ -1269,8 +1251,8 @@ export default function AdminDashboardPage() {
                     <p className="text-xs text-gray-500 italic">No technical interviews completed.</p>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {selectedUserDetail.technical_reports.map((r) => (
-                        <div key={r.id} className="rounded-xl border border-gray-800 bg-[#0d0e15] p-3 text-xs">
+                      {selectedUserDetail.technical_reports.map((r, rIdx) => (
+                        <div key={`tech-${r.id}-${rIdx}`} className="rounded-xl border border-gray-800 bg-[#0d0e15] p-3 text-xs">
                           <div className="flex justify-between items-center font-bold">
                             <span className="text-white">Score: {r.overall_score}/10</span>
                             <span className="text-violet-400">{r.final_level}</span>
@@ -1292,8 +1274,8 @@ export default function AdminDashboardPage() {
                     <p className="text-xs text-gray-500 italic">No coding challenges attempted.</p>
                   ) : (
                     <div className="space-y-2">
-                      {selectedUserDetail.coding_submissions.map((s) => (
-                        <div key={s.id} className="rounded-xl border border-gray-800 bg-[#0d0e15] p-3 text-xs flex justify-between items-center">
+                      {selectedUserDetail.coding_submissions.map((s, sIdx) => (
+                        <div key={`sub-${s.id}-${sIdx}`} className="rounded-xl border border-gray-800 bg-[#0d0e15] p-3 text-xs flex justify-between items-center">
                           <div>
                             <span className="font-bold text-white">{s.question_title || "Coding Problem"}</span>
                             <span className="ml-2 font-mono uppercase text-violet-400 text-[10px]">({s.language})</span>
@@ -1314,8 +1296,8 @@ export default function AdminDashboardPage() {
                     <p className="text-xs text-gray-500 italic">No queries or concerns raised.</p>
                   ) : (
                     <div className="space-y-2">
-                      {selectedUserDetail.queries.map((q) => (
-                        <div key={q.id} className="rounded-xl border border-gray-800 bg-[#0d0e15] p-3 text-xs">
+                      {selectedUserDetail.queries.map((q, qIdx) => (
+                        <div key={`uq-${q.id}-${qIdx}`} className="rounded-xl border border-gray-800 bg-[#0d0e15] p-3 text-xs">
                           <div className="flex justify-between items-center">
                             <span className="font-bold text-white">{q.subject}</span>
                             <StatusBadge status={q.status} />

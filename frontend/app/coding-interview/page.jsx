@@ -36,14 +36,61 @@ import {
   Check,
   Copy,
   ShieldCheck,
+  Loader2,
+  ChevronDown,
 } from "lucide-react";
 
 const SUPPORTED_LANGUAGES = [
-  { id: "python", name: "Python 3", ext: "py", file: "solution.py", compiler: "Python 3.11 Runtime" },
-  { id: "javascript", name: "JavaScript", ext: "js", file: "solution.js", compiler: "Node.js 20 Runtime" },
-  { id: "c", name: "C Programming", ext: "c", file: "solution.c", compiler: "GCC 13 C Runtime" },
-  { id: "cpp", name: "C++", ext: "cpp", file: "solution.cpp", compiler: "G++ 13 C++ Runtime" },
-  { id: "java", name: "Java", ext: "java", file: "Main.java", compiler: "OpenJDK 21 Runtime" },
+  {
+    id: "python",
+    name: "Python 3",
+    tag: "PY",
+    ext: "py",
+    file: "solution.py",
+    compiler: "Python 3.11 Runtime",
+    dotColor: "bg-amber-500",
+    badgeBg: "bg-blue-50 text-blue-700 border border-blue-200/80",
+  },
+  {
+    id: "javascript",
+    name: "JavaScript",
+    tag: "JS",
+    ext: "js",
+    file: "solution.js",
+    compiler: "Node.js 20 Runtime",
+    dotColor: "bg-yellow-500",
+    badgeBg: "bg-amber-50 text-amber-800 border border-amber-200/80",
+  },
+  {
+    id: "c",
+    name: "C Programming",
+    tag: "C",
+    ext: "c",
+    file: "solution.c",
+    compiler: "GCC 13 C Runtime",
+    dotColor: "bg-sky-500",
+    badgeBg: "bg-sky-50 text-sky-700 border border-sky-200/80",
+  },
+  {
+    id: "cpp",
+    name: "C++",
+    tag: "C++",
+    ext: "cpp",
+    file: "solution.cpp",
+    compiler: "G++ 13 C++ Runtime",
+    dotColor: "bg-indigo-500",
+    badgeBg: "bg-indigo-50 text-indigo-700 border border-indigo-200/80",
+  },
+  {
+    id: "java",
+    name: "Java",
+    tag: "JAVA",
+    ext: "java",
+    file: "Main.java",
+    compiler: "OpenJDK 21 Runtime",
+    dotColor: "bg-red-500",
+    badgeBg: "bg-red-50 text-red-700 border border-red-200/80",
+  },
 ];
 
 const checkSkillsEligibility = (rdata) => {
@@ -175,9 +222,37 @@ export default function CodingInterviewPage() {
   const [copiedCandidateCode, setCopiedCandidateCode] = useState(false);
   const [copiedCorrectCode, setCopiedCorrectCode] = useState(false);
   const [submissionModalData, setSubmissionModalData] = useState(null);
+  const [submittedCount, setSubmittedCount] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = sessionStorage.getItem("codingSubmittedCount");
+      return saved ? parseInt(saved, 10) : 0;
+    }
+    return 0;
+  });
+  const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
+  const langDropdownRef = useRef(null);
 
   const textareaRef = useRef(null);
   const lineNumbersRef = useRef(null);
+  const hasStartedRef = useRef(false);
+
+  // Close custom language dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        langDropdownRef.current &&
+        !langDropdownRef.current.contains(event.target)
+      ) {
+        setIsLangDropdownOpen(false);
+      }
+    };
+    if (isLangDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isLangDropdownOpen]);
 
   // EDITOR FUNCTIONS
 
@@ -232,84 +307,328 @@ const handleScroll = () => {
 
 
 // =====================================================
-// CODE EDITOR KEYBOARD
+// CODE EDITOR KEYBOARD — Smart Auto-Indent
 // =====================================================
 
 const handleKeyDown = (e) => {
   const textarea = e.target;
 
   // ---------------------------------------------------
-  // TAB = 4 SPACES
+  // TAB = 4 SPACES  |  SHIFT+TAB = DE-INDENT LINE
   // ---------------------------------------------------
   if (e.key === "Tab") {
     e.preventDefault();
 
     const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
+    const end   = textarea.selectionEnd;
     const value = textarea.value;
 
-    const indent = "    ";
+    if (e.shiftKey) {
+      // SHIFT+TAB: remove up to 4 leading spaces from current line
+      const lineStart = value.lastIndexOf("\n", start - 1) + 1;
+      const lineText  = value.slice(lineStart);
+      const spaces    = lineText.match(/^ {1,4}/)?.[0] ?? "";
+      if (!spaces) return;
 
-    const newCode =
-      value.substring(0, start) +
-      indent +
-      value.substring(end);
+      const newCode =
+        value.slice(0, lineStart) +
+        value.slice(lineStart + spaces.length);
 
-    setCode(newCode);
+      setCode(newCode);
 
-    requestAnimationFrame(() => {
-      if (!textareaRef.current) return;
-
-      textareaRef.current.focus();
-
-      const cursorPosition = start + indent.length;
-
-      textareaRef.current.selectionStart = cursorPosition;
-      textareaRef.current.selectionEnd = cursorPosition;
-
-      // Keep cursor visible
-      textareaRef.current.scrollIntoView({
-        block: "nearest",
+      requestAnimationFrame(() => {
+        if (!textareaRef.current) return;
+        textareaRef.current.focus();
+        const newPos = Math.max(lineStart, start - spaces.length);
+        textareaRef.current.selectionStart = newPos;
+        textareaRef.current.selectionEnd   = newPos;
       });
-    });
+    } else {
+      // TAB: insert 4 spaces at cursor
+      const indent  = "    ";
+      const newCode =
+        value.slice(0, start) + indent + value.slice(end);
+
+      setCode(newCode);
+
+      requestAnimationFrame(() => {
+        if (!textareaRef.current) return;
+        textareaRef.current.focus();
+        const pos = start + indent.length;
+        textareaRef.current.selectionStart = pos;
+        textareaRef.current.selectionEnd   = pos;
+        textareaRef.current.scrollIntoView({ block: "nearest" });
+      });
+    }
 
     return;
   }
 
   // ---------------------------------------------------
-  // ENTER
+  // CLOSING BRACE AUTO-DEDENT  (C / C++ / Java / JS)
+  // When "}" is typed on a line containing only whitespace,
+  // remove one indent level (4 spaces) before inserting "}"
   // ---------------------------------------------------
-  if (e.key === "Enter") {
-    // Let textarea insert the newline normally.
-    // After React updates the code, scroll to the
-    // current cursor position.
+  if (
+    e.key === "}" &&
+    ["c", "cpp", "java", "javascript"].includes(language)
+  ) {
+    const start     = textarea.selectionStart;
+    const value     = textarea.value;
+    const lineStart = value.lastIndexOf("\n", start - 1) + 1;
+    const lineText  = value.slice(lineStart, start);
+
+    if (/^\s{4,}$/.test(lineText)) {
+      e.preventDefault();
+      const dedented = lineText.slice(0, lineText.length - 4);
+      const newCode  =
+        value.slice(0, lineStart) +
+        dedented + "}" +
+        value.slice(start);
+
+      setCode(newCode);
+
+      requestAnimationFrame(() => {
+        if (!textareaRef.current) return;
+        textareaRef.current.focus();
+        const pos = lineStart + dedented.length + 1;
+        textareaRef.current.selectionStart = pos;
+        textareaRef.current.selectionEnd   = pos;
+        handleScroll();
+      });
+      return;
+    }
+  }
+
+
+  // ---------------------------------------------------
+  // AUTO-CLOSING PAIRS  —  (, {, [, ", '
+  // Works across Python / JavaScript / C / C++ / Java
+  // Rules:
+  //   1. Typing an opener inserts opener+closer and places
+  //      cursor between them.
+  //   2. If a region is selected, wrap it with the pair.
+  //   3. If cursor is already right before the matching
+  //      closer, skip over it instead of inserting again.
+  //   4. Quotes skip auto-close after a backslash (\' or \").
+  //   5. Backspace on an empty pair deletes both characters.
+  // ---------------------------------------------------
+  const PAIRS = { "(": ")", "{": "}", "[": "]", '"': '"', "'": "'" };
+  const CLOSERS = new Set([")", "}", "]", '"', "'"]);
+
+  if (e.key in PAIRS) {
+    const start  = textarea.selectionStart;
+    const end    = textarea.selectionEnd;
+    const value  = textarea.value;
+    const closer = PAIRS[e.key];
+
+    // Wrap selection with the pair
+    if (start !== end) {
+      e.preventDefault();
+      const selected = value.slice(start, end);
+      const newCode  =
+        value.slice(0, start) +
+        e.key + selected + closer +
+        value.slice(end);
+      setCode(newCode);
+      requestAnimationFrame(() => {
+        if (!textareaRef.current) return;
+        textareaRef.current.focus();
+        textareaRef.current.selectionStart = start + 1;
+        textareaRef.current.selectionEnd   = end + 1;
+      });
+      return;
+    }
+
+    // Skip auto-close for quotes after a backslash (escape sequences)
+    if ((e.key === '"' || e.key === "'") && value[start - 1] === "\\") {
+      return;
+    }
+
+    // Insert opener + closer, place cursor between them
+    e.preventDefault();
+    const newCode =
+      value.slice(0, start) +
+      e.key + closer +
+      value.slice(end);
+    setCode(newCode);
     requestAnimationFrame(() => {
       if (!textareaRef.current) return;
+      textareaRef.current.focus();
+      textareaRef.current.selectionStart = start + 1;
+      textareaRef.current.selectionEnd   = start + 1;
+    });
+    return;
+  }
 
-      const textarea = textareaRef.current;
+  // ---------------------------------------------------
+  // SKIP-OVER CLOSER
+  // Typing a closing char when the cursor is already
+  // immediately before it → move past it, don't duplicate.
+  // ---------------------------------------------------
+  if (CLOSERS.has(e.key)) {
+    const start = textarea.selectionStart;
+    const end   = textarea.selectionEnd;
+    const value = textarea.value;
 
-      const cursor = textarea.selectionStart;
+    if (start === end && value[start] === e.key) {
+      e.preventDefault();
+      requestAnimationFrame(() => {
+        if (!textareaRef.current) return;
+        textareaRef.current.focus();
+        textareaRef.current.selectionStart = start + 1;
+        textareaRef.current.selectionEnd   = start + 1;
+      });
+      return;
+    }
+  }
 
-      // Get the current line number
-      const textBeforeCursor = textarea.value.substring(
-        0,
-        cursor
-      );
+  // ---------------------------------------------------
+  // BACKSPACE — delete both chars of an empty pair
+  // e.g.  (|)  →  Backspace  →  removes both ( and )
+  // ---------------------------------------------------
+  if (e.key === "Backspace") {
+    const start = textarea.selectionStart;
+    const end   = textarea.selectionEnd;
+    const value = textarea.value;
 
-      const currentLine =
-        textBeforeCursor.split("\n").length - 1;
+    if (start === end && start > 0) {
+      const charBefore = value[start - 1];
+      const charAfter  = value[start];
+      if (PAIRS[charBefore] === charAfter) {
+        e.preventDefault();
+        const newCode =
+          value.slice(0, start - 1) +
+          value.slice(start + 1);
+        setCode(newCode);
+        requestAnimationFrame(() => {
+          if (!textareaRef.current) return;
+          textareaRef.current.focus();
+          textareaRef.current.selectionStart = start - 1;
+          textareaRef.current.selectionEnd   = start - 1;
+          handleScroll();
+        });
+        return;
+      }
+    }
+  }
 
-      const lineHeight = 24;
+  // ---------------------------------------------------
+  // ENTER — smart auto-indent + bracket pair expansion
+  //
+  // Case A — cursor is between an opening/closing pair:
+  //   {|}  →  {\n    |\n}   (cursor on indented middle line)
+  //   (|)  →  (\n    |\n)
+  //   [|]  →  [\n    |\n]
+  //
+  // Case B — line ends with a block-opener token:
+  //   Python  ":" → next line gets +4 spaces
+  //   C/C++/Java/JS "{" → next line gets +4 spaces
+  //
+  // Case C — all other lines: preserve existing indentation
+  // ---------------------------------------------------
+  if (e.key === "Enter") {
+    e.preventDefault();
 
+    const start    = textarea.selectionStart;
+    const end      = textarea.selectionEnd;
+    const value    = textarea.value;
+
+    // Characters immediately around the cursor
+    const charBefore = value[start - 1] ?? "";
+    const charAfter  = value[start]     ?? "";
+
+    // Bracket pairs that trigger expansion
+    const EXPAND_PAIRS = { "{": "}", "(": ")", "[": "]" };
+
+    // Find the beginning of the current line
+    const lineStart   = value.lastIndexOf("\n", start - 1) + 1;
+    const currentLine = value.slice(lineStart, start);
+
+    // Preserve existing leading whitespace
+    const leadingWS   = currentLine.match(/^(\s*)/)[1];
+
+    // ── Case A: cursor is inside an empty bracket pair ──
+    if (EXPAND_PAIRS[charBefore] === charAfter) {
+      // Insert:  \n<indent+4>  \n<indent>
+      // Cursor lands on the middle (indented) line
+      const innerLine  = "\n" + leadingWS + "    ";
+      const closerLine = "\n" + leadingWS;
+      const insertion  = innerLine + closerLine;
+
+      const newCode =
+        value.slice(0, start) +
+        insertion +
+        value.slice(end);
+
+      setCode(newCode);
+
+      requestAnimationFrame(() => {
+        if (!textareaRef.current) return;
+        // Place cursor at end of the inner (middle) line
+        const newCursor = start + innerLine.length;
+        textareaRef.current.selectionStart = newCursor;
+        textareaRef.current.selectionEnd   = newCursor;
+
+        const linesBefore    = newCode.slice(0, newCursor).split("\n");
+        const currentLineNum = linesBefore.length - 1;
+        const lineHeight     = 24;
+        const targetScrollTop =
+          currentLineNum * lineHeight -
+          textareaRef.current.clientHeight +
+          lineHeight * 2;
+
+        if (targetScrollTop > textareaRef.current.scrollTop) {
+          textareaRef.current.scrollTop = targetScrollTop;
+        }
+        handleScroll();
+      });
+      return;
+    }
+
+    // ── Case B & C: regular indent ──
+    const trimmed = currentLine.trimEnd();
+    let extraIndent = "";
+
+    // Python: indent after ":"
+    if (language === "python" && trimmed.endsWith(":")) {
+      extraIndent = "    ";
+    }
+
+    // C / C++ / Java / JS: indent after "{"
+    if (
+      ["c", "cpp", "java", "javascript"].includes(language) &&
+      trimmed.endsWith("{")
+    ) {
+      extraIndent = "    ";
+    }
+
+    const insertion = "\n" + leadingWS + extraIndent;
+
+    const newCode =
+      value.slice(0, start) +
+      insertion +
+      value.slice(end);
+
+    setCode(newCode);
+
+    requestAnimationFrame(() => {
+      if (!textareaRef.current) return;
+      const newCursor = start + insertion.length;
+      textareaRef.current.selectionStart = newCursor;
+      textareaRef.current.selectionEnd   = newCursor;
+
+      const linesBefore    = newCode.slice(0, newCursor).split("\n");
+      const currentLineNum = linesBefore.length - 1;
+      const lineHeight     = 24;
       const targetScrollTop =
-        currentLine * lineHeight -
-        textarea.clientHeight +
+        currentLineNum * lineHeight -
+        textareaRef.current.clientHeight +
         lineHeight * 2;
 
-      if (targetScrollTop > textarea.scrollTop) {
-        textarea.scrollTop = targetScrollTop;
+      if (targetScrollTop > textareaRef.current.scrollTop) {
+        textareaRef.current.scrollTop = targetScrollTop;
       }
-
       handleScroll();
     });
   }
@@ -320,6 +639,9 @@ const handleKeyDown = (e) => {
 
 
   useEffect(() => {
+    if (hasStartedRef.current) return;
+    hasStartedRef.current = true;
+
     const startInterview = async () => {
       try {
         setLoading(true);
@@ -421,6 +743,7 @@ const handleKeyDown = (e) => {
         setError(
           error.message || "Failed to start coding interview"
         );
+        hasStartedRef.current = false;
       } finally {
         setLoading(false);
       }
@@ -531,6 +854,11 @@ const handleKeyDown = (e) => {
         });
       }
 
+      // Track completed test attendance so user can end interview once at least 1 solution is submitted
+      const newSubmittedCount = data.completed_count || (submittedCount + 1);
+      setSubmittedCount(newSubmittedCount);
+      sessionStorage.setItem("codingSubmittedCount", String(newSubmittedCount));
+
       if (data.next_question) {
         const prevNumber = questionNumber;
 
@@ -591,6 +919,12 @@ const handleKeyDown = (e) => {
       return;
     }
 
+    // REQUIRE AT LEAST ONE CODING TEST ATTENDED & SUBMITTED
+    if (submittedCount === 0) {
+      alert("Please attend and submit at least one coding question before stopping the interview.");
+      return;
+    }
+
     const confirmed = window.confirm(
       "Are you sure you want to stop the interview and generate your complete evaluation report?"
     );
@@ -648,10 +982,18 @@ const handleKeyDown = (e) => {
         error
       );
 
-      setError(
-        error.message ||
-        "Failed to generate final report"
-      );
+      const msg = error.message || "Failed to generate final report";
+      setError(msg);
+
+      if (
+        msg.toLowerCase().includes("at least one") ||
+        msg.toLowerCase().includes("no coding answers") ||
+        msg.toLowerCase().includes("submit a solution")
+      ) {
+        alert("Please attend and submit at least one coding question before stopping the interview.");
+      } else {
+        alert(msg);
+      }
     } finally {
       setStopping(false);
     }
@@ -662,51 +1004,114 @@ const handleKeyDown = (e) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-[#f8f7ff] flex items-center justify-center">
+      <div className="min-h-screen relative overflow-hidden flex items-center justify-center" style={{ background: "#07071a" }}>
         <AnimatedBackground />
 
+        {/* Dot grid background */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-15"
+          style={{
+            backgroundImage: "radial-gradient(circle, rgba(99,102,241,0.7) 1px, transparent 1px)",
+            backgroundSize: "22px 22px",
+          }}
+        />
+
+        {/* Diagonal light sweep */}
         <motion.div
-          initial={{
-            opacity: 0,
-            scale: 0.9,
-            y: 20,
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: "linear-gradient(120deg, transparent 20%, rgba(139,92,246,0.07) 50%, transparent 80%)",
           }}
-          animate={{
-            opacity: 1,
-            scale: 1,
-            y: 0,
-          }}
-          transition={{
-            duration: 0.6,
-          }}
-          className="relative z-10 text-center"
+          animate={{ x: ["-120%", "120%"] }}
+          transition={{ duration: 3.5, repeat: Infinity, ease: "linear" }}
+        />
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          className="relative z-10 flex flex-col items-center text-center px-6 max-w-md"
         >
-          <div className="relative mx-auto mb-6 w-20 h-20">
-
+          {/* Gear-ring loader */}
+          <div className="relative w-28 h-28 mb-8">
+            {/* Outer slow ring */}
             <motion.div
-              animate={{
-                rotate: 360,
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-              className="absolute inset-0 rounded-full border-4 border-violet-200 border-t-violet-600"
+              className="absolute inset-0 rounded-full"
+              style={{ border: "3px solid transparent", borderTopColor: "rgba(139,92,246,0.9)", borderRightColor: "rgba(99,102,241,0.4)" }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
             />
-
-            <div className="absolute inset-2 rounded-full bg-white/80 backdrop-blur flex items-center justify-center shadow-lg">
-              <Code2 className="w-7 h-7 text-violet-600" />
-            </div>
+            {/* Mid ring opposite */}
+            <motion.div
+              className="absolute inset-4 rounded-full"
+              style={{ border: "2px solid transparent", borderBottomColor: "rgba(167,139,250,0.9)", borderLeftColor: "rgba(99,102,241,0.3)" }}
+              animate={{ rotate: -360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            />
+            {/* Inner fast ring */}
+            <motion.div
+              className="absolute inset-8 rounded-full"
+              style={{ border: "2px solid transparent", borderTopColor: "rgba(196,181,253,1)", borderRightColor: "rgba(139,92,246,0.5)" }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+            />
+            {/* Core glow */}
+            <motion.div
+              className="absolute inset-11 rounded-full flex items-center justify-center"
+              style={{ background: "radial-gradient(circle, rgba(139,92,246,0.9), rgba(99,102,241,0.6))" }}
+              animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Code2 className="w-4 h-4 text-white" />
+            </motion.div>
+            {/* Orbit dot */}
+            <motion.div
+              className="absolute w-3 h-3 rounded-full bg-violet-300 shadow-[0_0_10px_4px_rgba(167,139,250,0.7)]"
+              style={{ top: -2, left: "calc(50% - 6px)" }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              transformOrigin="50% 56px"
+            />
           </div>
 
-          <h2 className="text-2xl font-bold text-slate-900">
-            Generating coding question...
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+            Building your challenge...
           </h2>
-
-          <p className="text-slate-500 mt-2">
-            AI is preparing your customized coding challenge.
+          <p className="text-slate-400 text-sm mb-8 leading-relaxed">
+            AI is analyzing your resume and generating a personalized coding problem.
           </p>
+
+          {/* Animated step indicators */}
+          <div className="flex flex-col gap-2 w-full max-w-xs">
+            {[
+              { label: "Initializing session", delay: 0 },
+              { label: "Analyzing resume & skills", delay: 0.4 },
+              { label: "Generating coding problem", delay: 0.8 },
+            ].map(({ label, delay }, i) => (
+              <motion.div
+                key={label}
+                className="flex items-center gap-3"
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay, duration: 0.5 }}
+              >
+                <motion.div
+                  className="w-2 h-2 rounded-full bg-violet-400 shrink-0"
+                  animate={{ scale: [1, 1.7, 1], opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 1.2, repeat: Infinity, delay: delay + i * 0.2 }}
+                  style={{ boxShadow: "0 0 6px 2px rgba(167,139,250,0.6)" }}
+                />
+                <span className="text-xs text-slate-400 font-mono text-left">{label}</span>
+                <motion.div
+                  className="flex-1 h-px"
+                  style={{ background: "linear-gradient(90deg, rgba(139,92,246,0.5), transparent)" }}
+                  initial={{ scaleX: 0, originX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ delay: delay + 0.2, duration: 0.8 }}
+                />
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
       </div>
     );
@@ -832,103 +1237,55 @@ const handleKeyDown = (e) => {
       <AnimatedBackground />
       <div className="relative z-10">
         <motion.header
-          initial={{
-            opacity: 0,
-            y: -25,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
-          transition={{
-            duration: 0.6,
-          }}
+          initial={{ opacity: 0, y: -25 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
           className="border-b border-white/70 bg-white/70 backdrop-blur-xl sticky top-0 z-50"
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
 
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            <div className="flex items-center justify-between gap-3">
 
               {/* Brand */}
-              <div>
-                <div className="flex items-center gap-3">
+              <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
 
-                  <motion.div
-                    whileHover={{
-                      rotate: 5,
-                      scale: 1.05,
-                    }}
-                    className="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-200"
-                  >
-                    <Code2 className="w-5 h-5 text-white" />
-                  </motion.div>
+                <motion.div
+                  whileHover={{ rotate: 5, scale: 1.05 }}
+                  className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-200 shrink-0"
+                >
+                  <Code2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </motion.div>
 
-                  <div>
-                    <div className="flex items-center gap-3 flex-wrap">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
 
-                      <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
-                        Coding Interview
-                      </h1>
+                    <h1 className="text-base sm:text-xl font-bold text-slate-900 truncate">
+                      Coding Interview
+                    </h1>
 
-                      <span className="px-3 py-1 bg-violet-100 text-violet-700 rounded-full text-xs font-bold">
-                        Question {questionNumber}
-                      </span>
+                    <span className="px-2 py-0.5 sm:px-3 sm:py-1 bg-violet-100 text-violet-700 rounded-full text-xs font-bold shrink-0">
+                      Q {questionNumber}
+                    </span>
 
-                    </div>
-
-                    <p className="text-slate-500 text-xs sm:text-sm mt-1">
-                      Adaptive AI coding assessment
-                    </p>
                   </div>
+
+                  <p className="hidden text-xs text-slate-500 sm:block sm:mt-0.5">
+                    Adaptive AI coding assessment
+                  </p>
                 </div>
               </div>
 
               {/* Header Actions */}
-              <div className="flex flex-wrap items-center gap-2">
-
-                {/* Language Selector Dropdown */}
-               
-
-                <span
-                  className={`px-3 py-2 rounded-xl font-bold text-xs ${difficulty.toLowerCase() ===
-                      "easy"
-                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                      : difficulty.toLowerCase() ===
-                        "medium"
-                        ? "bg-amber-50 text-amber-700 border border-amber-200"
-                        : "bg-red-50 text-red-700 border border-red-200"
-                    }`}
-                >
-                  {difficulty}
-                </span>
-
-                <button
-                  onClick={() =>
-                    router.push("/dashboard")
-                  }
-                  className="flex items-center gap-2 px-3.5 py-2 bg-white/80 hover:bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition shadow-sm"
-                >
-                  <LayoutDashboard className="w-4 h-4" />
-                  <span className="hidden sm:inline">
-                    Dashboard
-                  </span>
-                </button>
-
-               
+              <div className="flex shrink-0 items-center gap-2 sm:gap-3">
 
                 <button
                   onClick={handleStopInterview}
-                  disabled={
-                    stopping ||
-                    submitting ||
-                    running
-                  }
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-red-100 transition disabled:opacity-50"
+                  disabled={stopping || submitting || running}
+                  className="flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-lg shadow-red-100 transition disabled:opacity-50"
                 >
-                  <Square className="w-3.5 h-3.5 fill-current" />
-                  {stopping
-                    ? "Generating..."
-                    : "Stop Interview"}
+                  <Square className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current shrink-0" />
+                  <span className="hidden sm:inline">{stopping ? "Generating..." : "Stop Interview"}</span>
+                  <span className="sm:hidden">{stopping ? "..." : "Stop"}</span>
                 </button>
 
               </div>
@@ -1178,30 +1535,7 @@ const handleKeyDown = (e) => {
                                 Sample Case {index + 1}
                               </span>
 
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (inputVal) {
-                                    navigator.clipboard.writeText(inputVal);
-                                    setCopiedInputIdx(index);
-                                    setTimeout(() => setCopiedInputIdx(null), 1500);
-                                  }
-                                }}
-                                className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800 transition px-2 py-1 rounded-md hover:bg-slate-200/70"
-                                title="Copy input"
-                              >
-                                {copiedInputIdx === index ? (
-                                  <>
-                                    <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                    <span className="text-emerald-600 font-semibold">Copied</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Copy className="w-3.5 h-3.5" />
-                                    <span>Copy</span>
-                                  </>
-                                )}
-                              </button>
+
                             </div>
 
                             <div className="space-y-3 font-mono text-xs">
@@ -1298,52 +1632,140 @@ const handleKeyDown = (e) => {
       EDITOR HEADER
   ================================================= */}
 
-                <div className="px-4 sm:px-5 py-3.5 bg-slate-50/90 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200">
+                <div className="px-3 sm:px-5 py-3 bg-slate-50/90 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 border-b border-slate-200">
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3">
 
                     {/* File name */}
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white text-indigo-700 rounded-lg text-xs font-mono font-bold border border-slate-200 shadow-sm">
-
+                    <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 bg-white text-indigo-700 rounded-xl text-xs font-mono font-bold border border-slate-200 shadow-sm">
                       <FileCode2 className="w-3.5 h-3.5 text-indigo-600" />
-
-                      {activeLangConfig.file}
-
+                      <span>{activeLangConfig.file}</span>
                     </div>
 
-                    {/* Language */}
-                    <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700 shadow-sm">
-
-                      <span className="text-slate-400 text-[11px] font-medium hidden sm:inline">
-                        Lang:
-                      </span>
-
-                      <select
-                        value={language}
-                        onChange={(e) =>
-                          handleLanguageChange(e.target.value)
-                        }
-                        disabled={submitting || stopping}
-                        className="bg-transparent text-slate-800 font-semibold focus:outline-none cursor-pointer text-xs"
+                    {/* Custom Language Selector Dropdown (Fully Responsive: Mobile, Tablet, Laptop 1080px, 1440px) */}
+                    <div className="relative" ref={langDropdownRef}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!submitting && !stopping && !running) {
+                            setIsLangDropdownOpen(!isLangDropdownOpen);
+                          }
+                        }}
+                        disabled={submitting || stopping || running}
+                        className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl border transition-all text-xs font-semibold shadow-sm ${
+                          isLangDropdownOpen
+                            ? "bg-violet-50/90 border-violet-400 text-violet-900 ring-2 ring-violet-200"
+                            : "bg-white hover:bg-slate-50 border-slate-200 text-slate-800 hover:border-slate-300"
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
-                        {SUPPORTED_LANGUAGES.map((lang) => (
-                          <option
-                            key={lang.id}
-                            value={lang.id}
-                          >
-                            {lang.name}
-                          </option>
-                        ))}
-                      </select>
+                        <span className={`px-1.5 py-0.5 rounded-md text-[10px] sm:text-[11px] font-mono font-bold ${activeLangConfig.badgeBg}`}>
+                          {activeLangConfig.tag || activeLangConfig.ext.toUpperCase()}
+                        </span>
 
+                        <span className="font-semibold">{activeLangConfig.name}</span>
+
+                        <ChevronDown
+                          className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
+                            isLangDropdownOpen ? "rotate-180 text-violet-600" : ""
+                          }`}
+                        />
+                      </button>
+
+                      {/* Dropdown Menu Popover (Fully Responsive: Mobile Floating Sheet, Tablet/Desktop Floating Dropdown) */}
+                      <AnimatePresence>
+                        {isLangDropdownOpen && (
+                          <>
+                            {/* Mobile overlay backdrop */}
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-40 sm:hidden"
+                              onClick={() => setIsLangDropdownOpen(false)}
+                            />
+
+                            <motion.div
+                              initial={{ opacity: 0, y: 16, scale: 0.97 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 16, scale: 0.97 }}
+                              transition={{ duration: 0.18, ease: "easeOut" }}
+                              className="fixed inset-x-3 bottom-3 sm:bottom-auto sm:inset-x-auto sm:absolute sm:left-0 sm:top-full sm:mt-2 w-auto sm:w-80 max-w-sm rounded-3xl sm:rounded-2xl bg-white border border-slate-200/90 shadow-2xl shadow-slate-950/25 p-2.5 sm:p-2 z-50 backdrop-blur-xl"
+                            >
+                              {/* Mobile handle indicator */}
+                              <div className="w-10 h-1 rounded-full bg-slate-200 mx-auto mb-2 sm:hidden" />
+
+                              <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                  Select Programming Language
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setIsLangDropdownOpen(false)}
+                                  className="sm:hidden text-slate-400 hover:text-slate-600 p-0.5 rounded-md hover:bg-slate-100 transition"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                                <span className="hidden sm:inline text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-medium">
+                                  5 Available
+                                </span>
+                              </div>
+
+                              <div className="mt-1 space-y-1 max-h-[50vh] sm:max-h-none overflow-y-auto">
+                                {SUPPORTED_LANGUAGES.map((lang) => {
+                                  const isSelected = language === lang.id;
+
+                                  return (
+                                    <button
+                                      key={lang.id}
+                                      type="button"
+                                      onClick={() => {
+                                        handleLanguageChange(lang.id);
+                                        setIsLangDropdownOpen(false);
+                                      }}
+                                      className={`w-full flex items-center justify-between px-3 py-2.5 sm:py-2.5 rounded-2xl sm:rounded-xl text-left transition-all group ${
+                                        isSelected
+                                          ? "bg-violet-50 text-violet-900 font-semibold ring-1 ring-violet-200"
+                                          : "hover:bg-slate-50 text-slate-700"
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                                        <span
+                                          className={`w-8 h-8 rounded-xl sm:rounded-lg flex items-center justify-center text-xs font-mono font-bold shrink-0 ${lang.badgeBg}`}
+                                        >
+                                          {lang.tag || lang.ext.toUpperCase()}
+                                        </span>
+
+                                        <div className="min-w-0">
+                                          <span className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-violet-700 block truncate">
+                                            {lang.name}
+                                          </span>
+                                          <p className="text-[10px] sm:text-[11px] text-slate-400 font-mono mt-0.5 truncate">
+                                            {lang.compiler}
+                                          </p>
+                                        </div>
+                                      </div>
+
+                                      {isSelected && (
+                                        <div className="w-5 h-5 rounded-full bg-violet-600 text-white flex items-center justify-center shrink-0 ml-2 shadow-sm">
+                                          <Check className="w-3 h-3 stroke-[3]" />
+                                        </div>
+                                      )}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
                     </div>
 
-                    <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-violet-50 text-violet-700 border border-violet-200/60 rounded-lg text-xs font-mono font-medium">
+                    <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-violet-50 text-violet-700 border border-violet-200/60 rounded-xl text-xs font-mono font-medium">
                       <Terminal className="w-3.5 h-3.5 text-violet-600" />
                       <span>{activeLangConfig.compiler}</span>
                     </div>
 
-                    <span className="text-xs text-slate-400 hidden lg:block">
+                    <span className="text-xs text-slate-400 hidden xl:block">
                       Tab = 4 spaces
                     </span>
 
@@ -1543,11 +1965,11 @@ const handleKeyDown = (e) => {
               {/* Run Code */}
               <motion.button
                 whileHover={{
-                  scale: 1.02,
-                  y: -2,
+                  scale: running || submitting || stopping ? 1 : 1.02,
+                  y: running || submitting || stopping ? 0 : -2,
                 }}
                 whileTap={{
-                  scale: 0.98,
+                  scale: running || submitting || stopping ? 1 : 0.98,
                 }}
                 onClick={handleRunCode}
                 disabled={
@@ -1555,22 +1977,31 @@ const handleKeyDown = (e) => {
                   submitting ||
                   stopping
                 }
-                className="px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl disabled:opacity-50 font-semibold transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
+                className={`px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2 ${
+                  running ? "opacity-90 ring-2 ring-blue-400/60 cursor-wait animate-pulse" : "disabled:opacity-50"
+                }`}
               >
-                <Play className="w-4 h-4 fill-current" />
-                {running
-                  ? "Testing Sample Cases..."
-                  : "Run Code (Sample Tests)"}
+                {running ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-white" />
+                    <span>Running Tests in Sandbox...</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 fill-current" />
+                    <span>Run Code (Sample Tests)</span>
+                  </>
+                )}
               </motion.button>
 
               {/* Submit */}
               <motion.button
                 whileHover={{
-                  scale: 1.02,
-                  y: -2,
+                  scale: submitting || running || stopping ? 1 : 1.02,
+                  y: submitting || running || stopping ? 0 : -2,
                 }}
                 whileTap={{
-                  scale: 0.98,
+                  scale: submitting || running || stopping ? 1 : 0.98,
                 }}
                 onClick={handleSubmit}
                 disabled={
@@ -1578,12 +2009,21 @@ const handleKeyDown = (e) => {
                   running ||
                   stopping
                 }
-                className="px-6 py-3.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-xl disabled:opacity-50 font-semibold transition-all shadow-lg shadow-violet-200 flex items-center justify-center gap-2"
+                className={`px-6 py-3.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-xl font-semibold transition-all shadow-lg shadow-violet-200 flex items-center justify-center gap-2 ${
+                  submitting ? "opacity-90 ring-2 ring-violet-400/60 cursor-wait animate-pulse" : "disabled:opacity-50"
+                }`}
               >
-                <Send className="w-4 h-4" />
-                {submitting
-                  ? "Evaluating All Tests..."
-                  : "Submit Solution (All Tests)"}
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-white" />
+                    <span>Evaluating All Tests...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    <span>Submit Solution (All Tests)</span>
+                  </>
+                )}
               </motion.button>
             </div>
 
@@ -1599,6 +2039,108 @@ const handleKeyDown = (e) => {
               </span>
             </div>
           </motion.div>
+
+          {/* Running Code Animated Status Card */}
+          <AnimatePresence>
+            {running && (
+              <motion.div
+                initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                className="mb-6 p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 border border-blue-500/30 shadow-xl shadow-blue-900/20 text-white backdrop-blur-md overflow-hidden relative"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/10 to-transparent animate-pulse pointer-events-none" />
+
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400">
+                        <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
+                      </div>
+                      <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                      </span>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold tracking-wide text-blue-200">
+                          Executing Code Against Sample Cases...
+                        </span>
+                        <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                          {language}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-300 mt-0.5">
+                        Compiling and running your solution with test inputs in a secured sandbox environment.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 text-xs text-blue-300/90 bg-blue-900/40 px-3 py-1.5 rounded-lg border border-blue-700/40">
+                    <div className="flex gap-1 items-center">
+                      <span className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "0ms" }}></span>
+                      <span className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "150ms" }}></span>
+                      <span className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "300ms" }}></span>
+                    </div>
+                    <span className="font-mono text-[11px]">Testing I/O</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Submitting Code Animated Status Card */}
+          <AnimatePresence>
+            {submitting && (
+              <motion.div
+                initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                className="mb-6 p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-violet-950 via-slate-900 to-indigo-950 border border-violet-500/30 shadow-xl shadow-violet-900/20 text-white backdrop-blur-md overflow-hidden relative"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-violet-500/10 to-transparent animate-pulse pointer-events-none" />
+
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-xl bg-violet-600/20 border border-violet-500/40 flex items-center justify-center text-violet-400">
+                        <Loader2 className="w-6 h-6 animate-spin text-violet-400" />
+                      </div>
+                      <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-violet-500"></span>
+                      </span>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold tracking-wide text-violet-200">
+                          AI Evaluating All Test Cases & Algorithm...
+                        </span>
+                        <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                          Final Assessment
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-300 mt-0.5">
+                        Evaluating hidden boundary cases, measuring time/space complexity, and computing AI score.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 text-xs text-violet-300/90 bg-violet-900/40 px-3 py-1.5 rounded-lg border border-violet-700/40">
+                    <div className="flex gap-1 items-center">
+                      <span className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: "0ms" }}></span>
+                      <span className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: "150ms" }}></span>
+                      <span className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: "300ms" }}></span>
+                    </div>
+                    <span className="font-mono text-[11px]">Evaluating</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
 
 
@@ -2070,92 +2612,6 @@ const handleKeyDown = (e) => {
                       </div>
                     )}
 
-                    {/* Candidate Answer (Submitted Code) */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                          <FileCode2 className="w-4 h-4 text-violet-600" />
-                          <span>Candidate Answer (Your Code)</span>
-                          <span className="text-[10px] px-2 py-0.5 rounded bg-violet-100 text-violet-700 font-semibold uppercase">
-                            {submissionModalData.candidate_language || language}
-                          </span>
-                        </span>
-                        {submissionModalData.candidate_code && (
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(submissionModalData.candidate_code);
-                              setCopiedCandidateCode(true);
-                              setTimeout(() => setCopiedCandidateCode(false), 2000);
-                            }}
-                            className="text-[11px] text-slate-500 hover:text-slate-800 flex items-center gap-1 transition"
-                          >
-                            {copiedCandidateCode ? (
-                              <>
-                                <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                <span className="text-emerald-600">Copied</span>
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="w-3.5 h-3.5" />
-                                <span>Copy</span>
-                              </>
-                            )}
-                          </button>
-                        )}
-                      </div>
-                      <pre className="p-3.5 rounded-xl bg-slate-900 text-slate-100 font-mono text-xs overflow-x-auto max-h-44 border border-slate-800 leading-relaxed">
-                        <code>{submissionModalData.candidate_code || code}</code>
-                      </pre>
-                    </div>
-
-                    {/* Correct Answer (Reference Solution) */}
-                    {(submissionModalData.correct_answer || submissionModalData.reference_solution) && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
-                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                            <span>Correct Answer (Reference Solution)</span>
-                            <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-semibold">
-                              RAG Verified
-                            </span>
-                          </span>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(
-                                submissionModalData.correct_answer || submissionModalData.reference_solution
-                              );
-                              setCopiedCorrectCode(true);
-                              setTimeout(() => setCopiedCorrectCode(false), 2000);
-                            }}
-                            className="text-[11px] text-emerald-700 hover:text-emerald-900 flex items-center gap-1 transition"
-                          >
-                            {copiedCorrectCode ? (
-                              <>
-                                <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                <span className="text-emerald-600">Copied</span>
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="w-3.5 h-3.5" />
-                                <span>Copy Solution</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-                        <pre className="p-3.5 rounded-xl bg-slate-950 text-emerald-400 font-mono text-xs overflow-x-auto max-h-48 border border-emerald-900/40 leading-relaxed">
-                          <code>{submissionModalData.correct_answer || submissionModalData.reference_solution}</code>
-                        </pre>
-
-                        {submissionModalData.solution_explanation && (
-                          <div className="p-3 bg-emerald-50/70 border border-emerald-200/60 rounded-xl text-xs text-slate-700 leading-relaxed">
-                            <span className="font-bold text-emerald-900 block mb-1">
-                              Solution Explanation:
-                            </span>
-                            {submissionModalData.solution_explanation}
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </div>
 
                   {/* Modal Footer */}
