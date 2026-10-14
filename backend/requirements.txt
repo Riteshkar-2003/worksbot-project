@@ -54,3 +54,4 @@ zstandard==0.25.0
 chromadb
 google-auth
 python-multipart
+PyJWT>=2.8.0

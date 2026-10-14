@@ -148,6 +148,20 @@ TABLE_CREATION_QUERIES = [
         INDEX idx_user_id (user_id),
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    """,
+
+    # 9. Admin users table (completely separate from regular users)
+    """
+    CREATE TABLE IF NOT EXISTS admin_users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(100) NOT NULL UNIQUE,
+        email VARCHAR(255) NOT NULL UNIQUE,
+        password_hash VARCHAR(255) NOT NULL,
+        full_name VARCHAR(255) DEFAULT 'Administrator',
+        is_active TINYINT(1) DEFAULT 1,
+        last_login TIMESTAMP NULL DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     """
 ]
 
@@ -212,6 +226,15 @@ def init_db():
         VALUES (1, 'Candidate', 'candidate@interview.ai', '');
         """
         cursor.execute(seed_user_query)
+
+        # Step 4: Ensure default admin user exists
+        import bcrypt as _bcrypt
+        _admin_pass = _bcrypt.hashpw(b"Admin@WorksBot2024", _bcrypt.gensalt()).decode("utf-8")
+        seed_admin_query = """
+        INSERT IGNORE INTO admin_users (id, username, email, password_hash, full_name)
+        VALUES (1, 'admin', 'admin@worksbot.ai', %s, 'Platform Administrator');
+        """
+        cursor.execute(seed_admin_query, (_admin_pass,))
         db_conn.commit()
 
         cursor.close()

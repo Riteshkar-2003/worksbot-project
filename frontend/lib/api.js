@@ -456,3 +456,33 @@ export async function deleteAdminQuery(queryId) {
     return handleResponse(response);
 }
 
+
+/* =========================================================
+   ADMIN AUTHENTICATION ENDPOINTS
+   ========================================================= */
+
+export async function adminLogin(username, password) {
+    const response = await apiFetch(`${API_URL}/admin/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+    });
+    return handleResponse(response);
+}
+
+export async function adminVerifyToken(token) {
+    const response = await apiFetch(`${API_URL}/admin/auth/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+    });
+    return handleResponse(response);
+}
+
+export async function adminLogout() {
+    const response = await apiFetch(`${API_URL}/admin/auth/logout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+    });
+    return handleResponse(response);
+}

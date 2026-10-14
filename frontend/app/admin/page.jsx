@@ -42,10 +42,17 @@ import {
   getAdminQueries,
   updateAdminQuery,
   deleteAdminQuery,
+  adminVerifyToken,
+  adminLogout,
 } from "../../lib/api";
+
 
 export default function AdminDashboardPage() {
   const router = useRouter();
+
+  // Auth guard state
+  const [authChecked, setAuthChecked] = useState(false);
+  const [adminUser, setAdminUser] = useState(null);
 
   // Active top navigation tab
   const [activeTab, setActiveTab] = useState("queries"); // 'overview', 'queries', 'users', 'interviews', 'coding', 'resumes'
@@ -85,9 +92,49 @@ export default function AdminDashboardPage() {
   // Notification banner
   const [notification, setNotification] = useState("");
 
+  // ── Auth guard: verify admin token on mount ──────────────────────────────
   useEffect(() => {
-    loadAllData();
+    const checkAdminAuth = async () => {
+      try {
+        const token = localStorage.getItem("admin_token");
+        if (!token) {
+          router.replace("/admin/login");
+          return;
+        }
+        const res = await adminVerifyToken(token);
+        if (!res?.valid) {
+          localStorage.removeItem("admin_token");
+          localStorage.removeItem("admin_user");
+          router.replace("/admin/login");
+          return;
+        }
+        // Restore admin user info from localStorage
+        try {
+          const storedAdmin = localStorage.getItem("admin_user");
+          if (storedAdmin) setAdminUser(JSON.parse(storedAdmin));
+        } catch {}
+        setAuthChecked(true);
+        loadAllData();
+      } catch (err) {
+        console.error("Admin auth check failed:", err);
+        localStorage.removeItem("admin_token");
+        localStorage.removeItem("admin_user");
+        router.replace("/admin/login");
+      }
+    };
+    checkAdminAuth();
   }, []);
+
+  // ── Logout handler ───────────────────────────────────────────────────────
+  const handleAdminLogout = async () => {
+    try {
+      await adminLogout();
+    } catch {}
+    localStorage.removeItem("admin_token");
+    localStorage.removeItem("admin_user");
+    router.replace("/admin/login");
+  };
+
 
   const loadAllData = async () => {
     try {
@@ -217,6 +264,18 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Show auth loading screen while checking token
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-[#0d0e15] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-10 w-10 rounded-full border-2 border-violet-500 border-t-transparent animate-spin" />
+          <p className="text-sm text-gray-400">Verifying admin session…</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0d0e15] text-slate-100 font-sans selection:bg-violet-600 selection:text-white">
       {/* Top Gradient Background */}
@@ -266,12 +325,24 @@ export default function AdminDashboardPage() {
               <span className="hidden sm:inline">Candidate Dashboard</span>
             </button>
 
+            {/* Admin identity badge */}
+            {adminUser && (
+              <div className="hidden sm:flex items-center gap-2 rounded-xl border border-violet-800/40 bg-violet-950/30 px-3 py-2">
+                <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-violet-600/50 text-xs font-bold text-white">
+                  {(adminUser.username || "A")[0].toUpperCase()}
+                </div>
+                <span className="text-xs font-semibold text-violet-200">{adminUser.username}</span>
+              </div>
+            )}
+
+            {/* Logout button */}
             <button
-              onClick={() => router.push("/profile")}
-              className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-violet-900/40 transition hover:from-violet-500 hover:to-indigo-500"
+              id="admin-logout-btn"
+              onClick={handleAdminLogout}
+              className="flex items-center gap-1.5 rounded-xl bg-red-900/30 border border-red-800/40 px-3.5 py-2 text-xs font-bold text-red-300 shadow-md transition hover:bg-red-900/60 hover:text-red-200"
             >
-              <User className="h-3.5 w-3.5" />
-              <span>User Profile</span>
+              <X className="h-3.5 w-3.5" />
+              <span>Logout</span>
             </button>
           </div>
         </div>

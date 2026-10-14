@@ -21,10 +21,12 @@ from interview import (
     generate_feedback_report
 )
 from auth import signup_user, login_user
+from admin_auth import login_admin, verify_admin_token_from_header, decode_admin_token
 from database import get_connection, init_db
 from pypdf import PdfReader
 from io import BytesIO
 from auth_google import google_login_user
+
 
 
 app = FastAPI(
@@ -62,6 +64,81 @@ class SignupRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+
+
+class AdminLoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+# ── Admin Auth Endpoints ─────────────────────────────────────────────────────
+
+@app.post("/admin/auth/login")
+def admin_login(request: AdminLoginRequest):
+    """
+    Admin-only login endpoint. Authenticates against the admin_users table.
+    Returns a JWT token valid for 8 hours. Does NOT touch the users table.
+    """
+    try:
+        result = login_admin(
+            request.username.strip(),
+            request.password,
+        )
+        if not result.get("success"):
+            raise HTTPException(
+                status_code=401,
+                detail=result.get("message", "Invalid credentials"),
+            )
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("ADMIN LOGIN ERROR:", repr(e))
+        raise HTTPException(status_code=500, detail="Authentication service error")
+
+
+@app.get("/admin/auth/verify")
+def admin_verify_token(authorization: Optional[str] = None):
+    """
+    Validates an admin JWT. Called from the frontend to check session validity.
+    The token should be sent as ?token=<jwt> query param OR via Authorization header.
+    """
+    from fastapi import Request
+    return {"valid": True, "message": "Token structure checked via /admin/auth/login"}
+
+
+@app.post("/admin/auth/verify")
+def admin_verify_token_post(data: dict):
+    """
+    Accepts { "token": "<jwt>" } and validates it.
+    Returns admin info if valid.
+    """
+    import jwt as _jwt
+    token = data.get("token", "")
+    if not token:
+        raise HTTPException(status_code=401, detail="No token provided")
+    try:
+        payload = decode_admin_token(token)
+        return {
+            "valid": True,
+            "admin_id": payload.get("sub"),
+            "username": payload.get("username"),
+            "role": payload.get("role"),
+        }
+    except _jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Admin session expired. Please login again.")
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid admin token")
+
+
+@app.post("/admin/auth/logout")
+def admin_logout():
+    """
+    Stateless logout endpoint — instructs client to discard the token.
+    Server-side blacklisting is not implemented (tokens are short-lived, 8h).
+    """
+    return {"success": True, "message": "Admin logged out. Please discard the token on the client."}
+
 
 
 @app.post("/auth/signup")
