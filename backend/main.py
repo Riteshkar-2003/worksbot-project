@@ -140,6 +140,88 @@ def admin_logout():
     return {"success": True, "message": "Admin logged out. Please discard the token on the client."}
 
 
+class CreateAdminRequest(BaseModel):
+    username: str
+    email: str
+    password: str
+    full_name: Optional[str] = "Administrator"
+    token: str  # Existing admin JWT to authorize this action
+
+
+@app.post("/admin/auth/create-admin")
+def create_admin_user(request: CreateAdminRequest):
+    """
+    Creates a new admin account. Requires a valid existing admin JWT token
+    passed in the request body as `token`. Only existing admins can create new admins.
+    """
+    import jwt as _jwt
+    from admin_auth import hash_admin_password
+
+    # 1. Validate the caller's admin token
+    try:
+        decode_admin_token(request.token)
+    except _jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Your admin session has expired. Please login again.")
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid admin token. Only authenticated admins can create new admins.")
+
+    # 2. Validate inputs
+    username = request.username.strip().lower()
+    email = request.email.strip().lower()
+    password = request.password
+    full_name = (request.full_name or "Administrator").strip()
+
+    if not username or len(username) < 3:
+        raise HTTPException(status_code=400, detail="Username must be at least 3 characters")
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Valid email is required")
+    if not password or len(password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+
+    # 3. Insert into admin_users
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        # Check for duplicate username or email
+        cursor.execute(
+            "SELECT id FROM admin_users WHERE username = %s OR email = %s LIMIT 1",
+            (username, email)
+        )
+        if cursor.fetchone():
+            raise HTTPException(status_code=409, detail="Username or email already exists in admin_users")
+
+        password_hash = hash_admin_password(password)
+        cursor.execute(
+            """
+            INSERT INTO admin_users (username, email, password_hash, full_name, is_active)
+            VALUES (%s, %s, %s, %s, 1)
+            """,
+            (username, email, password_hash, full_name)
+        )
+        connection.commit()
+        new_id = cursor.lastrowid
+        print(f"[ADMIN] New admin created: id={new_id}, username={username}, by existing admin")
+        return {
+            "success": True,
+            "message": f"Admin account '{username}' created successfully.",
+            "admin": {"id": new_id, "username": username, "email": email, "full_name": full_name}
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("CREATE ADMIN ERROR:", repr(e))
+        raise HTTPException(status_code=500, detail="Failed to create admin account")
+    finally:
+        if cursor:
+            try: cursor.close()
+            except Exception: pass
+        if connection:
+            try: connection.close()
+            except Exception: pass
+
 
 @app.post("/auth/signup")
 def signup(request: SignupRequest):
