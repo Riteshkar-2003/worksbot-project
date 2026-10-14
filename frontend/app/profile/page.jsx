@@ -1,892 +1,4 @@
 
-// "use client";
-
-// import { useEffect, useState } from "react";
-// import { useRouter } from "next/navigation";
-// import { getHomeDashboard } from "../../lib/api";
-// import { motion } from "framer-motion";
-// import {
-//   Brain,
-//   User,
-//   LogOut,
-//   FileText,
-//   Code2,
-//   Mic,
-//   BarChart3,
-//   Upload,
-//   ArrowRight,
-//   Sparkles,
-//   CheckCircle2,
-// } from "lucide-react";
-
-// export default function HomeDashboard() {
-//   const router = useRouter();
-
-//   const [user, setUser] = useState(null);
-
-//   const [report, setReport] = useState({
-//     overall_score: null,
-//     technical_score: null,
-//     skills_score: null,
-//     projects_score: null,
-//     experience_score: null,
-//     final_level: null,
-//     created_at: null,
-//   });
-
-//   const [codingReport, setCodingReport] = useState({
-//     overall_score: null,
-//     technical_score: null,
-//     skills_score: null,
-//     projects_score: null,
-//     experience_score: null,
-//     final_level: null,
-//     created_at: null,
-//   });
-
-//   const [hasCodingReport, setHasCodingReport] = useState(false);
-//   const [hasReport, setHasReport] = useState(false);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState("");
-
-//   useEffect(() => {
-//     loadDashboard();
-//   }, []);
-
-//   async function loadDashboard() {
-//     try {
-//       setLoading(true);
-//       setError("");
-
-//       const storedUser = localStorage.getItem("user");
-
-//       if (!storedUser) {
-//         setError("User session not found. Please login again.");
-//         return;
-//       }
-
-//       const userData = JSON.parse(storedUser);
-
-//       if (!userData.id) {
-//         setError("User ID not found in login session.");
-//         return;
-//       }
-
-//       setUser(userData);
-
-//       const userId = Number(userData.id);
-
-//       if (!Number.isInteger(userId)) {
-//         setError("Invalid user ID.");
-//         return;
-//       }
-
-//       console.log("Logged-in User ID:", userId);
-
-//       const data = await getHomeDashboard(userId);
-
-//       console.log("Dashboard API response:", data);
-
-//       if (data.success) {
-//         setHasReport(data.has_previous_report);
-
-//         if (data.report) {
-//           setReport(data.report);
-//         }
-//       } else {
-//         setHasReport(false);
-//       }
-
-//       if (data.success) {
-//         setHasCodingReport(data.has_previous_coding_report);
-
-//         if (data.report) {
-//           setCodingReport(data.report);
-//         }
-//       } else {
-//         setHasCodingReport(false);
-//       }
-
-//     } catch (error) {
-//       console.error("Dashboard error:", error);
-//       setError(error.message || "Failed to load dashboard");
-//     } finally {
-//       setLoading(false);
-//     }
-//   }
-
-//   function displayValue(value) {
-//     if (
-//       value === null ||
-//       value === undefined ||
-//       value === ""
-//     ) {
-//       return "-";
-//     }
-
-//     return value;
-//   }
-
-//   function handleLogout() {
-//     localStorage.removeItem("user");
-//     router.push("/");
-//   }
-
-
-
-//   if (loading) {
-//     return (
-//       <main className="relative min-h-screen overflow-hidden bg-[#f8f7ff] flex items-center justify-center">
-
-
-
-//         <motion.div
-//           className="pointer-events-none fixed -left-32 -top-32 h-96 w-96 rounded-full bg-violet-300/30 blur-3xl"
-//           animate={{
-//             x: [0, 80, 0],
-//             y: [0, 50, 0],
-//             scale: [1, 1.15, 1],
-//           }}
-//           transition={{
-//             duration: 10,
-//             repeat: Infinity,
-//             ease: "easeInOut",
-//           }}
-//         />
-
-//         <motion.div
-//           className="pointer-events-none fixed -right-32 top-40 h-96 w-96 rounded-full bg-indigo-300/30 blur-3xl"
-//           animate={{
-//             x: [0, -70, 0],
-//             y: [0, 60, 0],
-//             scale: [1, 1.2, 1],
-//           }}
-//           transition={{
-//             duration: 12,
-//             repeat: Infinity,
-//             ease: "easeInOut",
-//           }}
-//         />
-
-//         <motion.div
-//           className="pointer-events-none fixed bottom-0 left-1/3 h-80 w-80 rounded-full bg-purple-300/20 blur-3xl"
-//           animate={{
-//             x: [0, 50, 0],
-//             y: [0, -70, 0],
-//           }}
-//           transition={{
-//             duration: 11,
-//             repeat: Infinity,
-//             ease: "easeInOut",
-//           }}
-//         />
-
-//         <motion.div
-//           initial={{ opacity: 0, scale: 0.9 }}
-//           animate={{ opacity: 1, scale: 1 }}
-//           className="relative z-10 rounded-2xl border border-slate-800 bg-slate-900 px-10 py-8 shadow-2xl"
-//         >
-//           <div className="flex items-center gap-4">
-
-//             <motion.div
-//               animate={{ rotate: 360 }}
-//               transition={{
-//                 duration: 2,
-//                 repeat: Infinity,
-//                 ease: "linear",
-//               }}
-//               className="h-8 w-8 rounded-full border-4 border-slate-700 border-t-violet-500"
-//             />
-
-//             <p className="text-lg font-semibold text-white">
-//               Loading Dashboard...
-//             </p>
-
-//           </div>
-//         </motion.div>
-//       </main>
-//     );
-//   }
-
-//   if (!user) {
-//     return (
-//       <main className="flex min-h-screen items-center justify-center bg-[#f8f7ff]">
-//         <div className="text-center">
-//           <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-violet-200 border-t-violet-600" />
-
-//           <p className="mt-4 text-sm font-medium text-slate-500">
-//             Loading your profile...
-//           </p>
-//         </div>
-//       </main>
-//     );
-//   }
-
-//   const firstName = user.name?.split(" ")[0] || "User";
-
-//   return (
-//     <main className="relative min-h-screen overflow-hidden bg-[#f8f7ff]">
-
-
-
-//       <motion.div
-//         className="pointer-events-none fixed -left-32 -top-32 h-96 w-96 rounded-full bg-violet-300/30 blur-3xl"
-//         animate={{
-//           x: [0, 80, 0],
-//           y: [0, 50, 0],
-//           scale: [1, 1.15, 1],
-//         }}
-//         transition={{
-//           duration: 10,
-//           repeat: Infinity,
-//           ease: "easeInOut",
-//         }}
-//       />
-
-//       <motion.div
-//         className="pointer-events-none fixed -right-32 top-40 h-96 w-96 rounded-full bg-indigo-300/30 blur-3xl"
-//         animate={{
-//           x: [0, -70, 0],
-//           y: [0, 60, 0],
-//           scale: [1, 1.2, 1],
-//         }}
-//         transition={{
-//           duration: 12,
-//           repeat: Infinity,
-//           ease: "easeInOut",
-//         }}
-//       />
-
-//       <motion.div
-//         className="pointer-events-none fixed bottom-0 left-1/3 h-80 w-80 rounded-full bg-purple-300/20 blur-3xl"
-//         animate={{
-//           x: [0, 50, 0],
-//           y: [0, -70, 0],
-//         }}
-//         transition={{
-//           duration: 11,
-//           repeat: Infinity,
-//           ease: "easeInOut",
-//         }}
-//       />
-
-
-
-//       <motion.header
-//         initial={{ opacity: 0, y: -20 }}
-//         animate={{ opacity: 1, y: 0 }}
-//         transition={{ duration: 0.5 }}
-//         className="relative z-20 border-b border-slate-200/70 bg-white/70 backdrop-blur-xl"
-//       >
-//         <nav className="sticky top-0 z-50 border-b border-white/60 bg-white/80 backdrop-blur-xl">
-
-//           <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
-
-//             {/* Logo */}
-
-//             <div className="flex items-center gap-3">
-
-//               <motion.div
-//                             whileHover={{
-//                                 rotate: 5,
-//                                 scale: 1.05,
-//                             }}
-//                             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-xs font-bold text-white shadow-lg shadow-violet-200 sm:h-10 sm:w-10 sm:text-sm"
-//                         >
-//                             AI
-//                         </motion.div>
-
-//               <div className="hidden sm:block">
-//                 <h1 className="font-bold text-slate-900">
-//                   AI Interview
-//                 </h1>
-
-//                 <p className="text-xs text-slate-500">
-//                   Preparation Platform
-//                 </p>
-//               </div>
-
-//             </div>
-
-//             {/* User */}
-
-//             <div className="flex items-center gap-3">
-
-//               <div className="hidden text-right sm:block">
-
-//                 <p className="text-sm font-bold text-slate-800">
-//                   {user.name}
-//                 </p>
-
-//                 <p className="text-xs text-slate-500">
-//                   {user.email}
-//                 </p>
-
-//               </div>
-
-//               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-violet-100 text-violet-700">
-//                 <User size={21} />
-//               </div>
-
-//               <button
-//                 onClick={handleLogout}
-//                 className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-red-50 hover:text-red-600"
-//                 title="Logout"
-//               >
-//                 <LogOut size={19} />
-//               </button>
-
-//             </div>
-
-//           </div>
-
-//         </nav>
-//       </motion.header>
-
-
-
-//       <div className="relative z-10 mx-auto max-w-7xl px-6 py-10">
-
-
-//         <motion.section
-//           initial={{ opacity: 0, y: 20 }}
-//           animate={{ opacity: 1, y: 0 }}
-//           className="relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-violet-600 to-indigo-600 p-8 text-white shadow-xl shadow-violet-200 md:p-10"
-//         >
-
-//           <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
-
-//           <div className="absolute -bottom-20 left-1/3 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
-
-//           <div className="relative max-w-3xl">
-
-//             <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold backdrop-blur">
-//               <Sparkles size={16} />
-//               AI INTERVIEW PREPARATION
-//             </div>
-
-//             <h2 className="mt-5 text-3xl font-extrabold md:text-4xl">
-//               Welcome back, {firstName}!
-//             </h2>
-
-//             <p className="mt-4 max-w-2xl leading-7 text-violet-100">
-//               Practice technical and coding interviews with AI and receive
-//               personalized feedback based on your performance.
-//             </p>
-
-//           </div>
-
-//         </motion.section>
-
-//         <section className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-
-//           <StatCard
-//             icon={FileText}
-//             title="Resume"
-//             value="Ready"
-//             description="Upload your resume"
-//           />
-
-//           <StatCard
-//             icon={Brain}
-//             title="AI Interview"
-//             value="Available"
-//             description="Adaptive questions"
-//           />
-
-//           <StatCard
-//             icon={Code2}
-//             title="Coding"
-//             value="Available"
-//             description="Practice coding"
-//           />
-
-//           <StatCard
-//             icon={BarChart3}
-//             title="Reports"
-//             value="Track"
-//             description="View performance"
-//           />
-
-//         </section>
-
-
-
-//         <section className="mt-10">
-
-//           <div>
-
-//             <span className="text-sm font-bold uppercase tracking-widest text-violet-600">
-//               Practice
-//             </span>
-
-//             <h3 className="mt-2 text-3xl font-extrabold text-slate-900">
-//               Choose your interview
-//             </h3>
-
-//             <p className="mt-2 text-slate-500">
-//               Select an interview type and start preparing.
-//             </p>
-
-//           </div>
-
-//           <div className="mt-6 grid gap-6 lg:grid-cols-2">
-
-//             {/* Technical Interview */}
-
-//             <InterviewCard
-//               icon={Brain}
-//               title="Technical Interview"
-//               description="Practice technical questions based on your resume, skills and selected difficulty."
-//               features={[
-//                 "Resume-based questions",
-//                 "Adaptive difficulty",
-//                 "AI answer evaluation",
-//                 "Detailed feedback",
-//               ]}
-//               buttonText="Start Technical Interview"
-//               onClick={() => router.push("/dashboard")}
-//             />
-
-//             {/* Coding Interview */}
-
-//             <InterviewCard
-//               icon={Code2}
-//               title="Coding Interview"
-//               description="Solve AI-generated coding problems and receive detailed code evaluation."
-//               features={[
-//                 "Resume-aware coding questions",
-//                 "Easy → Medium → Hard",
-//                 "Code evaluation",
-//                 "Coding performance report",
-//               ]}
-//               buttonText="Start Coding Interview"
-//               onClick={() => router.push("/coding_interview")}
-//               highlighted
-//             />
-
-//           </div>
-
-//         </section>
-
-//         <motion.section
-//           initial={{
-//             opacity: 0,
-//             y: 30,
-//           }}
-//           animate={{
-//             opacity: 1,
-//             y: 0,
-//           }}
-//           transition={{
-//             duration: 0.6,
-//           }}
-//           className="rounded-3xl border border-white/70 bg-white/75 p-7 shadow-xl backdrop-blur-xl md:p-8 mt-10"
-//         >
-
-
-//           <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-
-//             <div>
-//               <h2 className="text-2xl font-bold text-slate-900">
-//                 Previous Technical Interview Report
-//               </h2>
-
-//               <p className="mt-1 text-slate-500">
-//                 {hasReport
-//                   ? "Your latest interview performance"
-//                   : "No previous interview found"}
-//               </p>
-//             </div>
-
-//             {hasReport && (
-//               <span className="w-fit rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-600">
-//                 ✓ Completed
-//               </span>
-//             )}
-
-//           </div>
-
-
-
-//           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-
-//             <ReportCard
-//               title="Overall Score"
-//               value={displayValue(report.overall_score)}
-//             />
-
-//             <ReportCard
-//               title="Technical Score"
-//               value={displayValue(report.technical_score)}
-//             />
-
-//             <ReportCard
-//               title="Skills Score"
-//               value={displayValue(report.skills_score)}
-//             />
-
-//             <ReportCard
-//               title="Projects Score"
-//               value={displayValue(report.projects_score)}
-//             />
-
-//             <ReportCard
-//               title="Experience Score"
-//               value={displayValue(report.experience_score)}
-//             />
-
-//             <ReportCard
-//               title="Final Level"
-//               value={displayValue(report.final_level)}
-//             />
-
-//           </div>
-
-
-//           {/* {!hasReport && (
-//             <motion.div
-//               initial={{ opacity: 0 }}
-//               animate={{ opacity: 1 }}
-//               className="mt-8 rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-indigo-50 p-8 text-center"
-//             >
-//               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-3xl shadow-md">
-
-//               </div>
-
-//               <h3 className="mt-5 text-xl font-bold text-slate-900">
-//                 No Previous Interview
-//               </h3>
-
-//               <p className="mx-auto mt-2 max-w-md text-slate-500">
-//                 Attend your first AI interview to generate your personalized
-//                 performance report.
-//               </p>
-
-//               <motion.button
-//                 whileHover={{ scale: 1.03 }}
-//                 whileTap={{ scale: 0.97 }}
-//                 onClick={() => router.push("/dashboard")}
-//                 className="mt-6 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-6 py-3 font-semibold text-white shadow-lg shadow-violet-500/20"
-//               >
-//                 Attend Interview →
-//               </motion.button>
-//             </motion.div>
-//           )} */}
-
-
-//           {hasReport && report.created_at && (
-//             <div className="mt-8 border-t border-slate-200 pt-5 text-sm text-slate-500">
-//               Previous Interview:{" "}
-//               <span className="font-medium text-slate-700">
-//                 {new Date(report.created_at).toLocaleString()}
-//               </span>
-//             </div>
-//           )}
-//         </motion.section>
-
-
-//       <motion.section
-//           initial={{
-//             opacity: 0,
-//             y: 30,
-//           }}
-//           animate={{
-//             opacity: 1,
-//             y: 0,
-//           }}
-//           transition={{
-//             duration: 0.6,
-//           }}
-//           className="rounded-3xl border border-white/70 bg-white/75 p-7 shadow-xl backdrop-blur-xl md:p-8 mt-10"
-//         >
-
-
-//           <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-
-//             <div>
-//               <h2 className="text-2xl font-bold text-slate-900">
-//                 Previous Coding Interview Report
-//               </h2>
-
-//               <p className="mt-1 text-slate-500">
-//                 {hasReport
-//                   ? "Your latest interview performance"
-//                   : "No previous interview found"}
-//               </p>
-//             </div>
-
-//             {hasReport && (
-//               <span className="w-fit rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-600">
-//                 ✓ Completed
-//               </span>
-//             )}
-
-//           </div>
-
-
-
-//           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-
-//             <CodingReportCard
-//               title="Overall Score"
-//               value={displayValue(report.overall_score)}
-//             />
-
-//             <CodingReportCard
-//               title="Technical Score"
-//               value={displayValue(report.technical_score)}
-//             />
-
-//             <CodingReportCard
-//               title="Skills Score"
-//               value={displayValue(report.skills_score)}
-//             />
-
-//             <CodingReportCard
-//               title="Projects Score"
-//               value={displayValue(report.projects_score)}
-//             />
-
-//             <CodingReportCard
-//               title="Experience Score"
-//               value={displayValue(report.experience_score)}
-//             />
-
-//             <CodingReportCard
-//               title="Final Level"
-//               value={displayValue(report.final_level)}
-//             />
-
-//           </div>
-
-
-//           {/* {!hasReport && (
-//             <motion.div
-//               initial={{ opacity: 0 }}
-//               animate={{ opacity: 1 }}
-//               className="mt-8 rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-indigo-50 p-8 text-center"
-//             >
-//               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-3xl shadow-md">
-
-//               </div>
-
-//               <h3 className="mt-5 text-xl font-bold text-slate-900">
-//                 No Previous Interview
-//               </h3>
-
-//               <p className="mx-auto mt-2 max-w-md text-slate-500">
-//                 Attend your first AI interview to generate your personalized
-//                 performance report.
-//               </p>
-
-//               <motion.button
-//                 whileHover={{ scale: 1.03 }}
-//                 whileTap={{ scale: 0.97 }}
-//                 onClick={() => router.push("/dashboard")}
-//                 className="mt-6 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-6 py-3 font-semibold text-white shadow-lg shadow-violet-500/20"
-//               >
-//                 Attend Interview →
-//               </motion.button>
-//             </motion.div>
-//           )} */}
-
-
-//           {hasReport && report.created_at && (
-//             <div className="mt-8 border-t border-slate-200 pt-5 text-sm text-slate-500">
-//               Previous Interview:{" "}
-//               <span className="font-medium text-slate-700">
-//                 {new Date(report.created_at).toLocaleString()}
-//               </span>
-//             </div>
-//           )}
-
-//         </motion.section>
-
-
-
-
-
-//       </div>
-//     </main>
-//   );
-// }
-
-
-// function ReportCard({ title, value }) {
-//   return (
-//     <motion.div
-//       whileHover={{
-//         y: -5,
-//         scale: 1.01,
-//       }}
-//       className="group rounded-2xl border border-slate-200 bg-slate-50/80 p-6 transition-shadow hover:shadow-lg"
-//     >
-//       <div className="flex items-center justify-between">
-
-//         <p className="text-sm font-medium text-slate-500">
-//           {title}
-//         </p>
-
-//         <div className="h-2 w-2 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500" />
-
-//       </div>
-
-//       <p className="mt-4 text-3xl font-bold text-slate-900">
-//         {value}
-//       </p>
-//     </motion.div>
-//   );
-// }
-
-
-// function CodingReportCard({ title, value }) {
-//   return (
-//     <motion.div
-//       whileHover={{
-//         y: -5,
-//         scale: 1.01,
-//       }}
-//       className="group rounded-2xl border border-slate-200 bg-slate-50/80 p-6 transition-shadow hover:shadow-lg"
-//     >
-//       <div className="flex items-center justify-between">
-
-//         <p className="text-sm font-medium text-slate-500">
-//           {title}
-//         </p>
-
-//         <div className="h-2 w-2 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500" />
-
-//       </div>
-
-//       <p className="mt-4 text-3xl font-bold text-slate-900">
-//         {value}
-//       </p>
-//     </motion.div>
-//   );
-// }
-
-
-
-// function StatCard({
-//   icon: Icon,
-//   title,
-//   value,
-//   description,
-// }) {
-//   return (
-//     <motion.div
-//       whileHover={{ y: -4 }}
-//       className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm transition hover:shadow-lg"
-//     >
-
-//       <div className="flex items-center justify-between">
-
-//         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-violet-600">
-//           <Icon size={21} />
-//         </div>
-
-//         <CheckCircle2
-//           size={18}
-//           className="text-green-500"
-//         />
-
-//       </div>
-
-//       <p className="mt-5 text-sm font-medium text-slate-500">
-//         {title}
-//       </p>
-
-//       <p className="mt-1 text-xl font-extrabold text-slate-900">
-//         {value}
-//       </p>
-
-//       <p className="mt-1 text-xs text-slate-400">
-//         {description}
-//       </p>
-
-//     </motion.div>
-//   );
-// }
-
-
-
-
-
-// function InterviewCard({
-//   icon: Icon,
-//   title,
-//   description,
-//   features,
-//   buttonText,
-//   onClick,
-//   highlighted = false,
-// }) {
-//   return (
-//     <motion.div
-//       whileHover={{ y: -5 }}
-//       className={"relative overflow-hidden rounded-[2rem] border p-7 shadow-sm transition hover:shadow-xl border-slate-100 bg-white"
-//       }
-//     >
-//       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-lg shadow-violet-200">
-//         <Icon size={27} />
-//       </div>
-
-//       <h4 className="mt-6 text-2xl font-extrabold text-slate-900">
-//         {title}
-//       </h4>
-
-//       <p className="mt-3 leading-7 text-slate-600">
-//         {description}
-//       </p>
-
-//       <div className="mt-6 space-y-3">
-
-//         {features.map((feature) => (
-//           <div
-//             key={feature}
-//             className="flex items-center gap-3 text-sm font-medium text-slate-600"
-//           >
-//             <CheckCircle2
-//               size={17}
-//               className="shrink-0 text-violet-600"
-//             />
-
-//             {feature}
-//           </div>
-//         ))}
-
-//       </div>
-
-//       <button
-//         onClick={onClick}
-//         className="group mt-7 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3.5 font-bold text-white shadow-lg shadow-violet-100 transition hover:-translate-y-0.5 hover:shadow-xl"
-//       >
-//         {buttonText}
-
-//         <ArrowRight
-//           size={18}
-//           className="transition-transform group-hover:translate-x-1"
-//         />
-//       </button>
-
-//     </motion.div>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -1289,52 +401,20 @@ export default function ProfilePage() {
       {/* ====================================== */}
 
       <motion.header
-        initial={{
-          opacity: 0,
-          y: -20,
-        }}
-        animate={{
-          opacity: 1,
-          y: 0,
-        }}
-        transition={{
-          duration: 0.5,
-        }}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
         className="relative z-20 border-b border-slate-200/70 bg-white/70 backdrop-blur-xl"
       >
-        <nav className="sticky top-0 z-50 border-b border-white/60 bg-white/80 backdrop-blur-xl">
-
-          <div className="mx-auto flex min-h-[72px] w-full max-w-7xl items-center justify-between gap-3 px-3 py-3 sm:px-5 sm:py-4 lg:px-8">
+          <div className="mx-auto flex min-h-[64px] w-full max-w-7xl items-center justify-between gap-3 px-3 py-3 sm:px-5 sm:py-4 lg:px-8">
 
             {/* ==================== LOGO ==================== */}
 
             <div className="flex min-w-0 items-center gap-2 sm:gap-3">
 
               <motion.div
-                whileHover={{
-                  rotate: 5,
-                  scale: 1.05,
-                }}
-                className="
-            flex
-            h-9
-            w-9
-            shrink-0
-            items-center
-            justify-center
-            rounded-xl
-            bg-gradient-to-br
-            from-violet-600
-            to-indigo-600
-            text-xs
-            font-bold
-            text-white
-            shadow-lg
-            shadow-violet-200
-            sm:h-10
-            sm:w-10
-            sm:text-sm
-          "
+                whileHover={{ rotate: 5, scale: 1.05 }}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-xs font-bold text-white shadow-lg shadow-violet-200 sm:h-10 sm:w-10 sm:text-sm"
               >
                 AI
               </motion.div>
@@ -1342,29 +422,11 @@ export default function ProfilePage() {
               {/* Platform Name */}
               <div className="min-w-0">
 
-                <h1
-                  className="
-              truncate
-              text-xs
-              font-bold
-              text-slate-900
-              sm:text-sm
-              md:text-base
-              lg:text-lg
-            "
-                >
+                <h1 className="truncate text-xs font-bold text-slate-900 sm:text-sm md:text-base lg:text-lg">
                   AI Interview
                 </h1>
 
-                <p
-                  className="
-              hidden
-              text-[10px]
-              text-slate-500
-              sm:block
-              md:text-xs
-            "
-                >
+                <p className="hidden text-[10px] text-slate-500 sm:block md:text-xs">
                   Preparation Platform
                 </p>
 
@@ -1375,74 +437,40 @@ export default function ProfilePage() {
 
             {/* ==================== USER SECTION ==================== */}
 
-            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-              {/* RAISE QUERY BUTTON */}
-              <button
-                type="button"
-                onClick={() => setIsQueryModalOpen(true)}
-                className="flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50/80 px-3 py-2 text-xs font-semibold text-violet-700 transition hover:bg-violet-100 shadow-sm"
-                title="Facing an issue or need report clarification? Submit a query."
-              >
-                <MessageSquarePlus size={15} />
-                <span className="hidden sm:inline">Raise Query</span>
-              </button>
+            <div className="flex min-w-0 items-center gap-1.5 sm:gap-2 md:gap-3">
 
-              {/* ADMIN DASHBOARD BUTTON */}
+              {/* ADMIN DASHBOARD BUTTON – icon-only on mobile, full on md+ */}
               <button
                 type="button"
                 onClick={() => router.push("/admin")}
-                className="hidden md:flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 shadow-sm"
+                className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 shadow-sm md:px-3"
                 title="Open Admin Dashboard"
               >
-                <ShieldCheck size={15} className="text-violet-600" />
-                <span>Admin Portal</span>
+                <ShieldCheck size={15} className="text-violet-600 shrink-0" />
+                <span className="hidden md:inline">Admin Portal</span>
               </button>
 
+              {/* INTERVIEW HISTORY BUTTON – icon-only on mobile, text on sm+ */}
               <button
                 type="button"
                 onClick={() => router.push("/history")}
-                className="hidden sm:flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50/80 px-3 py-2 text-xs font-semibold text-violet-700 transition hover:bg-violet-100 shadow-sm"
+                className="flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50/80 px-2 py-2 text-xs font-semibold text-violet-700 transition hover:bg-violet-100 shadow-sm sm:px-3"
               >
-                <span>Interview History</span>
+                <span className="hidden sm:inline">Interview History</span>
+                <span className="sm:hidden text-violet-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+                </span>
               </button>
 
-              <div
-                className="
-            min-w-0
-            max-w-[115px]
-            text-right
-            sm:max-w-[180px]
-            md:max-w-[240px]
-            lg:max-w-[280px]
-          "
-              >
+              <div className="min-w-0 max-w-[90px] text-right sm:max-w-[150px] md:max-w-[220px] lg:max-w-[280px]">
 
                 {/* Username */}
-
-                <p
-                  className="
-              truncate
-              text-[11px]
-              font-bold
-              text-slate-800
-              sm:text-sm
-              md:text-base
-            "
-                >
+                <p className="truncate text-[11px] font-bold text-slate-800 sm:text-sm md:text-base">
                   {user?.name || "User"}
                 </p>
 
                 {/* Email */}
-
-                <p
-                  className="
-              truncate
-              text-[9px]
-              text-slate-500
-              sm:text-xs
-              md:text-sm
-            "
-                >
+                <p className="hidden truncate text-[9px] text-slate-500 sm:block sm:text-xs md:text-sm">
                   {user?.email || ""}
                 </p>
 
@@ -1452,70 +480,28 @@ export default function ProfilePage() {
               {/* User Icon */}
 
               <motion.div
-                whileHover={{
-                  scale: 1.05,
-                }}
-                className="
-            flex
-            h-9
-            w-9
-            shrink-0
-            items-center
-            justify-center
-            rounded-full
-            bg-violet-100
-            text-violet-700
-            sm:h-10
-            sm:w-10
-            md:h-11
-            md:w-11
-          "
+                whileHover={{ scale: 1.05 }}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-700 sm:h-10 sm:w-10 md:h-11 md:w-11"
               >
-                <User
-                  size={18}
-                  className="sm:h-5 sm:w-5"
-                />
+                <User size={18} className="sm:h-5 sm:w-5" />
               </motion.div>
 
 
               {/* Logout */}
 
               <motion.button
-                whileHover={{
-                  scale: 1.05,
-                }}
-                whileTap={{
-                  scale: 0.95,
-                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleLogout}
-                className="
-            flex
-            h-9
-            w-9
-            shrink-0
-            items-center
-            justify-center
-            rounded-xl
-            text-slate-500
-            transition
-            hover:bg-red-50
-            hover:text-red-600
-            sm:h-10
-            sm:w-10
-          "
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-500 transition hover:bg-red-50 hover:text-red-600 sm:h-10 sm:w-10"
                 title="Logout"
               >
-                <LogOut
-                  size={17}
-                  className="sm:h-[19px] sm:w-[19px]"
-                />
+                <LogOut size={17} className="sm:h-[19px] sm:w-[19px]" />
               </motion.button>
 
             </div>
 
           </div>
-
-        </nav>
       </motion.header>
 
       {/* ====================================== */}
@@ -1529,54 +515,54 @@ export default function ProfilePage() {
         {/* ====================================== */}
 
         <motion.section
-      initial={{
-        opacity: 0,
-        y: 20,
-      }}
-      animate={{
-        opacity: 1,
-        y: 0,
-      }}
-      className="relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-violet-600 to-indigo-600 p-8 text-white shadow-xl shadow-violet-200 md:p-10"
-    >
-      {/* Background decoration */}
-      <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
-
-      <div className="absolute -bottom-20 left-1/3 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
-
-      {/* Content */}
-      <div className="relative max-w-3xl">
-
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold backdrop-blur">
-          <Sparkles size={16} />
-
-          AI INTERVIEW PREPARATION
-        </div>
-
-        {/* Heading */}
-        <h2 className="mt-5 text-3xl font-extrabold md:text-4xl">
-          Welcome back, {firstName}!
-        </h2>
-
-        {/* Description */}
-        <p className="mt-4 max-w-2xl leading-7 text-violet-100">
-          Practice technical and coding interviews with AI
-          and receive personalized feedback based on your
-          performance.
-        </p>
-
-        {/* Start Interview Button */}
-        <button
-          onClick={handleStartInterview}
-          className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 font-bold text-violet-700 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:bg-violet-50 hover:shadow-xl active:translate-y-0"
+          initial={{
+            opacity: 0,
+            y: 20,
+          }}
+          animate={{
+            opacity: 1,
+            y: 0,
+          }}
+          className="relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-violet-600 to-indigo-600 p-8 text-white shadow-xl shadow-violet-200 md:p-10"
         >
-          Start Interview
-          <ArrowRight size={18} />
-        </button>
+          {/* Background decoration */}
+          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
 
-      </div>
-    </motion.section>
+          <div className="absolute -bottom-20 left-1/3 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
+
+          {/* Content */}
+          <div className="relative max-w-3xl">
+
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold backdrop-blur">
+              <Sparkles size={16} />
+
+              AI INTERVIEW PREPARATION
+            </div>
+
+            {/* Heading */}
+            <h2 className="mt-5 text-3xl font-extrabold md:text-4xl">
+              Welcome back, {firstName}!
+            </h2>
+
+            {/* Description */}
+            <p className="mt-4 max-w-2xl leading-7 text-violet-100">
+              Practice technical and coding interviews with AI
+              and receive personalized feedback based on your
+              performance.
+            </p>
+
+            {/* Start Interview Button */}
+            <button
+              onClick={handleStartInterview}
+              className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 font-bold text-violet-700 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:bg-violet-50 hover:shadow-xl active:translate-y-0"
+            >
+              Start Interview
+              <ArrowRight size={18} />
+            </button>
+
+          </div>
+        </motion.section>
 
         {/* ====================================== */}
         {/* STAT CARDS */}
@@ -1618,71 +604,7 @@ export default function ProfilePage() {
 
         </section>
 
-        {/* ====================================== */}
-        {/* CHOOSE INTERVIEW */}
-        {/* ====================================== */}
-
-        {/* <section className="mt-10">
-
-          <span className="text-sm font-bold uppercase tracking-widest text-violet-600">
-            Practice
-          </span>
-
-          <h3 className="mt-2 text-3xl font-extrabold text-slate-900">
-            Choose your interview
-          </h3>
-
-          <p className="mt-2 text-slate-500">
-            Select an interview type and start preparing.
-          </p>
-
-          <div className="mt-6 grid gap-6 lg:grid-cols-2">
-
-            {/* TECHNICAL INTERVIEW 
-
-            <InterviewCard
-              icon={Brain}
-              title="Technical Interview"
-              description="Practice technical questions based on your resume, skills and selected difficulty."
-              features={[
-                "Resume-based questions",
-                "Adaptive difficulty",
-                "AI answer evaluation",
-                "Detailed feedback",
-              ]}
-              buttonText="Start Technical Interview"
-              onClick={() =>
-                router.push("/dashboard")
-              }
-            />
-
-            {/* CODING INTERVIEW 
-
-            <InterviewCard
-              icon={Code2}
-              title="Coding Interview"
-              description="Solve AI-generated coding problems and receive detailed code evaluation."
-              features={[
-                "Resume-aware coding questions",
-                "Easy → Medium → Hard",
-                "Code evaluation",
-                "Coding performance report",
-              ]}
-              buttonText="Start Coding Interview"
-              onClick={() => {
-                const storedResume = typeof window !== "undefined" ? sessionStorage.getItem("resumeData") : null;
-                if (!storedResume) {
-                  router.push("/dashboard");
-                } else {
-                  router.push("/coding-interview");
-                }
-              }}
-            />
-
-          </div>
-
-        </section> */}
-
+       
         {/* ================================================= */}
         {/* TECHNICAL INTERVIEW REPORT */}
         {/* ================================================= */}
@@ -1890,21 +812,7 @@ export default function ProfilePage() {
                   )}
                 />
 
-                <InfoCard
-                  icon={Clock}
-                  title="Time Complexity"
-                  value={displayValue(
-                    codingReport.time_complexity
-                  )}
-                />
-
-                <InfoCard
-                  icon={Target}
-                  title="Space Complexity"
-                  value={displayValue(
-                    codingReport.space_complexity
-                  )}
-                />
+                
 
               </div>
 
@@ -1982,11 +890,10 @@ export default function ProfilePage() {
                   key={f.id}
                   type="button"
                   onClick={() => setQueryFilter(f.id)}
-                  className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-bold transition border ${
-                    queryFilter === f.id
+                  className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-bold transition border ${queryFilter === f.id
                       ? "bg-slate-900 text-white border-slate-900 shadow-sm"
                       : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-                  }`}
+                    }`}
                 >
                   <span>{f.label}</span>
                   <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${f.color || "bg-slate-100 text-slate-600"}`}>
@@ -2032,13 +939,12 @@ export default function ProfilePage() {
                       key={q.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className={`overflow-hidden rounded-2xl border transition hover:shadow-md ${
-                        isResolved
+                      className={`overflow-hidden rounded-2xl border transition hover:shadow-md ${isResolved
                           ? "border-emerald-200/80 bg-white"
                           : isInReview
-                          ? "border-blue-200/80 bg-white"
-                          : "border-slate-200 bg-white"
-                      }`}
+                            ? "border-blue-200/80 bg-white"
+                            : "border-slate-200 bg-white"
+                        }`}
                     >
                       {/* Top Bar of Card */}
                       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/70 px-5 py-3.5">
@@ -2050,13 +956,12 @@ export default function ProfilePage() {
                             {q.category}
                           </span>
                           <span
-                            className={`rounded-lg px-2 py-0.5 text-[10px] font-bold ${
-                              q.urgency === "High"
+                            className={`rounded-lg px-2 py-0.5 text-[10px] font-bold ${q.urgency === "High"
                                 ? "bg-red-50 text-red-700 border border-red-200"
                                 : q.urgency === "Medium"
-                                ? "bg-amber-50 text-amber-700 border border-amber-200"
-                                : "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                            }`}
+                                  ? "bg-amber-50 text-amber-700 border border-amber-200"
+                                  : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              }`}
                           >
                             {q.urgency} Urgency
                           </span>

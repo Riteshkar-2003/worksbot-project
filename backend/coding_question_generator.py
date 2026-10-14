@@ -1,6 +1,7 @@
 import json
 import re
 import os
+from typing import Optional, Dict, Any, List
 from dotenv import load_dotenv
 from groq import Groq
 from rag_coding.retriever import retrieve_coding_knowledge
@@ -20,7 +21,6 @@ def repair_pseudo_json_expressions(text: str) -> str:
     if not text:
         return ""
 
-    # Replace Python string multiplication: "str" * N -> repeated string (limit N to 10)
     def eval_repeat(m):
         base = m.group(1)
         try:
@@ -31,16 +31,69 @@ def repair_pseudo_json_expressions(text: str) -> str:
 
     text = re.sub(r'"([^"\\]*)"\s*\*\s*(\d+)', eval_repeat, text)
 
-    # Replace Python string concatenation: "str1" + "str2" -> "str1str2"
     for _ in range(10):
         new_text = re.sub(r'"([^"\\]*)"\s*\+\s*"([^"\\]*)"', r'"\1\2"', text)
         if new_text == text:
             break
         text = new_text
 
-    # Remove trailing commas before closing braces/brackets
     text = re.sub(r',\s*([\}\]])', r'\1', text)
     return text
+
+
+def safe_parse_json(text: str) -> Optional[dict]:
+    """Robust JSON parser that handles code blocks, unescaped newlines, and trailing commas."""
+    if not text:
+        return None
+
+    cleaned = text.strip()
+    # Strip markdown code fences if present
+    cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\s*```$", "", cleaned)
+    cleaned = cleaned.strip()
+
+    # Extract outermost JSON object { ... }
+    start = cleaned.find("{")
+    end = cleaned.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        cleaned = cleaned[start:end+1]
+
+    # Repair pseudo python expressions and trailing commas
+    cleaned = repair_pseudo_json_expressions(cleaned)
+
+    # Attempt 1: Standard parse with strict=False (allows raw newlines & control chars in strings)
+    try:
+        res = json.loads(cleaned, strict=False)
+        if isinstance(res, dict) and "title" in res:
+            return res
+    except Exception:
+        pass
+
+    # Attempt 2: Clean non-printable control characters that break JSON
+    try:
+        sanitized = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', ' ', cleaned)
+        res = json.loads(sanitized, strict=False)
+        if isinstance(res, dict) and "title" in res:
+            return res
+    except Exception:
+        pass
+
+    # Attempt 3: Auto-close unclosed braces if slightly truncated
+    try:
+        open_braces = cleaned.count("{") - cleaned.count("}")
+        open_brackets = cleaned.count("[") - cleaned.count("]")
+        repaired = cleaned
+        if open_brackets > 0:
+            repaired += "]" * open_brackets
+        if open_braces > 0:
+            repaired += "}" * open_braces
+        res = json.loads(repaired, strict=False)
+        if isinstance(res, dict) and "title" in res:
+            return res
+    except Exception:
+        pass
+
+    return None
 
 
 def get_default_starter_code(language: str = "python") -> str:
@@ -346,8 +399,10 @@ Return exactly this JSON structure:
 """
 
     content = ""
+    parsed_q = None
+
+    # Attempt 1: Groq with json_object mode
     try:
-        # First attempt with json_object mode
         response = client.chat.completions.create(
             model=os.getenv("MODEL_NAME"),
             messages=[
@@ -355,8 +410,9 @@ Return exactly this JSON structure:
                     "role": "system",
                     "content": (
                         "You are a professional coding interview question generator. "
-                        "Return strictly valid JSON only. Every value must be a plain literal string. "
-                        "Never use code expressions, string concatenation (+), or multiplication (*) in JSON values."
+                        "Return strictly valid JSON only. Every string value must be validly JSON-escaped. "
+                        "In programming code, escape all inner quotes as \\\" and write newlines as \\n. "
+                        "Never output unescaped raw newlines or quotes inside JSON values."
                     )
                 },
                 {
@@ -366,63 +422,50 @@ Return exactly this JSON structure:
             ],
             response_format={"type": "json_object"},
             temperature=0.2,
-            max_tokens=2500
+            max_tokens=4096
         )
         content = response.choices[0].message.content.strip()
-
+        parsed_q = safe_parse_json(content)
     except Exception as api_err:
         err_msg = str(api_err)
-        print("Groq JSON generation warning:", err_msg[:200])
+        print("Groq JSON generation notice (will retry with plain format):", err_msg[:160])
+        parsed_q = None
 
-        # If Groq returns 400 json_validate_failed, attempt to recover failed_generation
-        fg_match = re.search(r"failed_generation':\s*(?:'|\")(\{.*?\})(?:'|\")", err_msg, re.DOTALL)
-        if fg_match:
-            try:
-                raw_fg = fg_match.group(1).encode('utf-8').decode('unicode_escape', errors='ignore')
-                content = repair_pseudo_json_expressions(raw_fg)
-            except Exception:
-                content = ""
+    # Attempt 2: If attempt 1 failed or could not be parsed, retry WITHOUT response_format constraint
+    if not parsed_q:
+        try:
+            print("Retrying coding question generation with flexible plain JSON format...")
+            retry_resp = client.chat.completions.create(
+                model=os.getenv("MODEL_NAME"),
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a professional coding interview question generator. "
+                            "Output ONLY a raw valid JSON object starting with { and ending with }. "
+                            "Do not include markdown codeblocks or preamble text. "
+                            "Escape all double quotes in code as \\\"."
+                        )
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt + "\n\nCRITICAL: Return valid JSON object ONLY. Escape all quotes inside code strings."
+                    }
+                ],
+                temperature=0.2,
+                max_tokens=4096
+            )
+            content = retry_resp.choices[0].message.content.strip()
+            parsed_q = safe_parse_json(content)
+        except Exception as retry_err:
+            print("Retry generation failed:", retry_err)
+            return get_fallback_question(difficulty=difficulty, language=language)
 
-        # If still empty, retry without response_format
-        if not content:
-            try:
-                retry_resp = client.chat.completions.create(
-                    model=os.getenv("MODEL_NAME"),
-                    messages=[
-                        {
-                            "role": "system",
-                            "content": "You output valid JSON object only. Output { to start and } to end. Never use string operations."
-                        },
-                        {
-                            "role": "user",
-                            "content": prompt + "\n\nCRITICAL: All strings must be literal strings. No string concatenation."
-                        }
-                    ],
-                    temperature=0.2,
-                    max_tokens=2500
-                )
-                content = retry_resp.choices[0].message.content.strip()
-            except Exception as retry_err:
-                print("Retry generation failed:", retry_err)
-                return get_fallback_question(difficulty=difficulty, language=language)
-
-    # Parse and clean JSON
-    try:
-        content = repair_pseudo_json_expressions(content)
-        match = re.search(r"\{.*\}", content, re.DOTALL)
-        if match:
-            clean_json = match.group(0)
-        else:
-            clean_json = re.sub(r"^```json\s*", "", content)
-            clean_json = re.sub(r"^```\s*", "", clean_json)
-            clean_json = re.sub(r"\s*```$", "", clean_json).strip()
-
-        clean_json = repair_pseudo_json_expressions(clean_json)
-        question = json.loads(clean_json)
-
-    except Exception as parse_err:
-        print("JSON parse error, using fallback question:", parse_err)
+    if not parsed_q:
+        print("Could not parse AI question JSON, using fallback question.")
         return get_fallback_question(difficulty=difficulty, language=language)
+
+    question = parsed_q
 
     # Basic validation
     required_fields = [

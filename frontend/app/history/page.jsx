@@ -124,7 +124,7 @@ export default function InterviewHistoryPage() {
       const matchesDiff =
         selectedDifficulty === "all" ||
         (item.difficulty || "Easy").toLowerCase() ===
-          selectedDifficulty.toLowerCase();
+        selectedDifficulty.toLowerCase();
 
       return matchesSearch && matchesDiff;
     });
@@ -149,7 +149,7 @@ export default function InterviewHistoryPage() {
       const matchesDiff =
         selectedDifficulty === "all" ||
         (item.difficulty || "Easy").toLowerCase() ===
-          selectedDifficulty.toLowerCase();
+        selectedDifficulty.toLowerCase();
 
       const matchesLang =
         selectedLanguage === "all" ||
@@ -241,7 +241,7 @@ export default function InterviewHistoryPage() {
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
-              onClick={() => router.push("/dashboard")}
+              onClick={() => router.push("/profile")}
               className="p-2 sm:p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition shrink-0 active:scale-95"
               title="Back to Dashboard"
             >
@@ -371,11 +371,10 @@ export default function InterviewHistoryPage() {
             <div className="flex items-center gap-1 sm:gap-1.5 p-1 bg-slate-100/90 rounded-xl overflow-x-auto no-scrollbar scroll-smooth">
               <button
                 onClick={() => setActiveTab("all")}
-                className={`px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 sm:gap-2 shrink-0 ${
-                  activeTab === "all"
+                className={`px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 sm:gap-2 shrink-0 ${activeTab === "all"
                     ? "bg-white text-violet-700 shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
-                }`}
+                  }`}
               >
                 <FaBookOpen />
                 <span className="hidden sm:inline">All History</span>
@@ -387,11 +386,10 @@ export default function InterviewHistoryPage() {
 
               <button
                 onClick={() => setActiveTab("technical")}
-                className={`px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 sm:gap-2 shrink-0 ${
-                  activeTab === "technical"
+                className={`px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 sm:gap-2 shrink-0 ${activeTab === "technical"
                     ? "bg-white text-violet-700 shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
-                }`}
+                  }`}
               >
                 <FaBrain className="text-violet-600" />
                 <span className="hidden sm:inline">Technical Interview</span>
@@ -403,11 +401,10 @@ export default function InterviewHistoryPage() {
 
               <button
                 onClick={() => setActiveTab("coding")}
-                className={`px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 sm:gap-2 shrink-0 ${
-                  activeTab === "coding"
+                className={`px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 sm:gap-2 shrink-0 ${activeTab === "coding"
                     ? "bg-white text-violet-700 shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
-                }`}
+                  }`}
               >
                 <FaCode className="text-indigo-600" />
                 <span className="hidden sm:inline">Coding Interview</span>
@@ -629,29 +626,7 @@ export default function InterviewHistoryPage() {
                                       <span className="hidden sm:inline truncate">Candidate Answer</span>
                                       <span className="sm:hidden truncate">Your Answer</span>
                                     </span>
-                                    <button
-                                      onClick={() =>
-                                        handleCopy(
-                                          item.candidate_answer,
-                                          `ans-${cardId}`
-                                        )
-                                      }
-                                      className="text-[11px] text-slate-500 hover:text-slate-800 flex items-center gap-1 transition shrink-0 px-2 py-0.5 rounded hover:bg-slate-200/60"
-                                    >
-                                      {copiedId === `ans-${cardId}` ? (
-                                        <>
-                                          <FaCheck className="text-emerald-600" />
-                                          <span className="text-emerald-600">
-                                            Copied
-                                          </span>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <FaCopy />
-                                          <span>Copy</span>
-                                        </>
-                                      )}
-                                    </button>
+
                                   </div>
                                   <p className="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed break-words">
                                     {item.candidate_answer ||
@@ -673,30 +648,7 @@ export default function InterviewHistoryPage() {
                                         Correct Answer
                                       </span>
                                     </span>
-                                    <button
-                                      onClick={() =>
-                                        handleCopy(
-                                          item.correct_answer,
-                                          `corr-${cardId}`
-                                        )
-                                      }
-                                      className="text-[11px] text-emerald-700 hover:text-emerald-900 flex items-center gap-1 transition shrink-0 px-2 py-0.5 rounded hover:bg-emerald-100/70"
-                                    >
-                                      {copiedId === `corr-${cardId}` ? (
-                                        <>
-                                          <FaCheck className="text-emerald-600" />
-                                          <span className="text-emerald-600">
-                                            Copied
-                                          </span>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <FaCopy />
-                                          <span className="hidden sm:inline">Copy Correct Answer</span>
-                                          <span className="sm:hidden">Copy</span>
-                                        </>
-                                      )}
-                                    </button>
+
                                   </div>
                                   <p className="text-xs text-emerald-950 whitespace-pre-wrap leading-relaxed break-words">
                                     {item.correct_answer ||
@@ -873,30 +825,7 @@ export default function InterviewHistoryPage() {
                                       <span className="hidden sm:inline truncate">Candidate Answer (Your Code)</span>
                                       <span className="sm:hidden truncate">Your Code</span>
                                     </span>
-                                    <button
-                                      onClick={() =>
-                                        handleCopy(
-                                          item.candidate_code,
-                                          `c-code-${cardId}`
-                                        )
-                                      }
-                                      className="text-[11px] text-slate-400 hover:text-white flex items-center gap-1 transition shrink-0 px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-800"
-                                    >
-                                      {copiedId === `c-code-${cardId}` ? (
-                                        <>
-                                          <FaCheck className="text-emerald-400" />
-                                          <span className="text-emerald-400">
-                                            Copied
-                                          </span>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <FaCopy />
-                                          <span className="hidden sm:inline">Copy Code</span>
-                                          <span className="sm:hidden">Copy</span>
-                                        </>
-                                      )}
-                                    </button>
+
                                   </div>
                                   <pre className="font-mono text-[11px] sm:text-xs overflow-x-auto code-scroll max-h-56 sm:max-h-72 p-2 pt-3 leading-relaxed text-slate-200 touch-pan-x">
                                     <code>
@@ -932,31 +861,7 @@ export default function InterviewHistoryPage() {
                                         RAG Verified
                                       </span>
                                     </span>
-                                    <button
-                                      onClick={() =>
-                                        handleCopy(
-                                          item.correct_answer ||
-                                            item.reference_solution,
-                                          `ref-code-${cardId}`
-                                        )
-                                      }
-                                      className="text-[11px] text-emerald-400 hover:text-emerald-200 flex items-center gap-1 transition shrink-0 px-2 py-0.5 rounded bg-emerald-950/80 hover:bg-emerald-950"
-                                    >
-                                      {copiedId === `ref-code-${cardId}` ? (
-                                        <>
-                                          <FaCheck className="text-emerald-300" />
-                                          <span className="text-emerald-300">
-                                            Copied
-                                          </span>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <FaCopy />
-                                          <span className="hidden sm:inline">Copy Correct Answer</span>
-                                          <span className="sm:hidden">Copy</span>
-                                        </>
-                                      )}
-                                    </button>
+
                                   </div>
                                   <pre className="font-mono text-[11px] sm:text-xs overflow-x-auto code-scroll max-h-56 sm:max-h-72 p-2 pt-3 leading-relaxed text-emerald-300 touch-pan-x">
                                     <code>

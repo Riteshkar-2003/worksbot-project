@@ -202,7 +202,6 @@ export default function ReportPage() {
                     className="relative z-10 rounded-3xl border border-white/70 bg-white/80 p-10 text-center shadow-xl backdrop-blur-xl"
                 >
                     <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-100 text-3xl">
-                        📊
                     </div>
 
                     <h2 className="mt-5 text-2xl font-bold text-slate-900">
@@ -313,31 +312,33 @@ export default function ReportPage() {
                 }}
                 className="relative z-10 border-b border-white/70 bg-white/70 backdrop-blur-xl"
             >
-                <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+                <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
 
-                    <div>
-                        <h1 className="text-xl font-bold text-slate-900">
-                            AI Interview Preparation
-                        </h1>
-
-                        <p className="text-xs text-slate-500">
-                            Interview Performance Report
-                        </p>
+                    {/* Logo + Title */}
+                    <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-xs font-black text-white shadow-lg shadow-violet-200 sm:h-10 sm:w-10 sm:text-sm">
+                            AI
+                        </div>
+                        <div className="min-w-0">
+                            <h1 className="truncate text-sm font-bold text-slate-900 sm:text-base lg:text-lg">
+                                AI Interview Preparation
+                            </h1>
+                            <p className="hidden text-[10px] text-slate-500 sm:block sm:text-xs">
+                                Interview Performance Report
+                            </p>
+                        </div>
                     </div>
 
                     <motion.button
                         onClick={() =>
                             router.push("/profile")
                         }
-                        whileHover={{
-                            scale: 1.03,
-                        }}
-                        whileTap={{
-                            scale: 0.97,
-                        }}
-                        className="rounded-xl border border-violet-200 bg-white px-5 py-2.5 text-sm font-medium text-violet-600 shadow-sm transition hover:bg-violet-50"
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        className="flex shrink-0 items-center gap-1.5 rounded-xl border border-violet-200 bg-white px-3 py-2 text-xs font-semibold text-violet-600 shadow-sm transition hover:bg-violet-50 sm:px-5 sm:py-2.5 sm:text-sm"
                     >
-                        Profile
+                        <span className="hidden sm:inline">View Profile</span>
+                        <span className="sm:hidden">Profile</span>
                     </motion.button>
                 </div>
             </motion.header>

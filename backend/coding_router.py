@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from typing import Any, Optional, Dict, List
 import json
 import re
+import threading
+import time
 
 # Judge0-backed code execution — replaces all subprocess/docker logic
 from code_executor import execute_single_test_case, run_test_suite, execute_code_custom_input
@@ -29,6 +31,16 @@ router = app
 user_coding_sessions: Dict[str, List[Dict[str, Any]]] = {}
 user_coding_reports: Dict[str, Dict[str, Any]] = {}
 user_session_metadata: Dict[str, Dict[str, Any]] = {}
+
+_start_locks: Dict[str, threading.Lock] = {}
+_locks_guard = threading.Lock()
+
+
+def get_user_lock(user_key: str) -> threading.Lock:
+    with _locks_guard:
+        if user_key not in _start_locks:
+            _start_locks[user_key] = threading.Lock()
+        return _start_locks[user_key]
 
 
 
@@ -239,54 +251,82 @@ def generate_final_coding_report(answers: list) -> dict:
 def start_coding_interview(request: StartCodingRequest):
     try:
         user_key = str(request.user_id)
-        user_coding_sessions[user_key] = []
+        user_lock = get_user_lock(user_key)
 
-        question = generate_coding_question(
-            resume_text=request.resume_text,
-            difficulty=request.difficulty,
-            language=request.language
-        )
+        with user_lock:
+            existing = user_session_metadata.get(user_key)
+            existing_submissions = user_coding_sessions.get(user_key, [])
+            now = time.time()
 
-        q_title = question.get("title") if isinstance(question, dict) else "Question 1"
+            # If user already has an active question generated within the last 30 seconds
+            # and hasn't submitted any answer yet, reuse it to prevent duplicate generation
+            if (
+                existing
+                and not existing_submissions
+                and (now - existing.get("created_at", 0) < 30)
+                and existing.get("current_question")
+                and existing.get("language") == request.language
+                and existing.get("current_difficulty") == request.difficulty
+            ):
+                qid = existing.get("question_id")
+                sanitized_q = sanitize_question_for_client(existing["current_question"])
+                if qid:
+                    sanitized_q["id"] = qid
+                return {
+                    "success": True,
+                    "user_id": request.user_id,
+                    "question": sanitized_q,
+                    "difficulty": existing.get("current_difficulty", request.difficulty),
+                    "question_number": 1,
+                    "question_id": qid,
+                }
 
-       
-        all_cases = (question.get("sample_test_cases", []) or []) + (question.get("hidden_test_cases", []) or [])
-        ref_sol = question.get("reference_solution") or question.get("correct_answer") or ""
-        qid = save_coding_question_db(
-            title=question.get("title", "Coding Problem"),
-            description=question.get("description", ""),
-            difficulty=request.difficulty,
-            input_format=question.get("input_format", ""),
-            output_format=question.get("output_format", ""),
-            constraints_text=question.get("constraints", []),
-            examples=question.get("examples", question.get("sample_test_cases", [])),
-            test_cases=all_cases,
-            reference_solution=ref_sol
-        )
+            user_coding_sessions[user_key] = []
 
-      
-        user_session_metadata[user_key] = {
-            "resume_text": request.resume_text,
-            "language": request.language,
-            "current_difficulty": request.difficulty,
-            "previous_questions": [q_title],
-            "current_question": question,
-            "question_id": qid,
-        }
+            question = generate_coding_question(
+                resume_text=request.resume_text,
+                difficulty=request.difficulty,
+                language=request.language
+            )
 
-      
-        sanitized_q = sanitize_question_for_client(question)
-        if qid:
-            sanitized_q["id"] = qid
+            q_title = question.get("title") if isinstance(question, dict) else "Question 1"
 
-        return {
-            "success": True,
-            "user_id": request.user_id,
-            "question": sanitized_q,
-            "difficulty": request.difficulty,
-            "question_number": 1,
-            "question_id": qid,
-        }
+            all_cases = (question.get("sample_test_cases", []) or []) + (question.get("hidden_test_cases", []) or [])
+            ref_sol = question.get("reference_solution") or question.get("correct_answer") or ""
+            qid = save_coding_question_db(
+                title=question.get("title", "Coding Problem"),
+                description=question.get("description", ""),
+                difficulty=request.difficulty,
+                input_format=question.get("input_format", ""),
+                output_format=question.get("output_format", ""),
+                constraints_text=question.get("constraints", []),
+                examples=question.get("examples", question.get("sample_test_cases", [])),
+                test_cases=all_cases,
+                reference_solution=ref_sol
+            )
+
+            user_session_metadata[user_key] = {
+                "resume_text": request.resume_text,
+                "language": request.language,
+                "current_difficulty": request.difficulty,
+                "previous_questions": [q_title],
+                "current_question": question,
+                "question_id": qid,
+                "created_at": time.time(),
+            }
+
+            sanitized_q = sanitize_question_for_client(question)
+            if qid:
+                sanitized_q["id"] = qid
+
+            return {
+                "success": True,
+                "user_id": request.user_id,
+                "question": sanitized_q,
+                "difficulty": request.difficulty,
+                "question_number": 1,
+                "question_id": qid,
+            }
 
     except Exception as e:
         print("START ERROR:", str(e))
@@ -537,8 +577,8 @@ def stop_coding_interview(
                 }
 
             raise HTTPException(
-                status_code=404,
-                detail="No coding answers found for this user. Please submit a solution first."
+                status_code=400,
+                detail="Please attend and submit at least one coding question before stopping the interview."
             )
 
         meta = user_session_metadata.get(str(user_id), {})

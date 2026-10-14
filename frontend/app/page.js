@@ -1,8 +1,9 @@
 
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain,
   Code2,
@@ -13,10 +14,13 @@ import {
   Sparkles,
   CheckCircle2,
   Play,
+  Menu,
+  X,
 } from "lucide-react";
 
 export default function Home() {
   const router = useRouter();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Heading animation
 
@@ -156,81 +160,124 @@ export default function Home() {
         }}
         className="fixed left-1/2 top-5 z-50 w-[92%] max-w-6xl -translate-x-1/2"
       >
-        <div className="flex items-center justify-between rounded-2xl border border-slate-200/70 bg-white/80 px-5 py-3 shadow-lg shadow-slate-900/5 backdrop-blur-xl md:px-7">
+        <div className="rounded-2xl border border-slate-200/70 bg-white/80 shadow-lg shadow-slate-900/5 backdrop-blur-xl overflow-hidden">
 
-          {/* Logo */}
+          {/* Main bar */}
+          <div className="flex items-center justify-between px-4 py-3 md:px-7">
 
-          <motion.div
-            whileHover={{
-              scale: 1.03,
-            }}
-            className="flex cursor-pointer items-center gap-3"
-            onClick={() => router.push("/")}
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-sm font-black text-white shadow-lg shadow-violet-500/20">
-              AI
+            {/* Logo */}
+            <motion.div
+              whileHover={{ scale: 1.03 }}
+              className="flex cursor-pointer items-center gap-2.5"
+              onClick={() => { router.push("/"); setMobileMenuOpen(false); }}
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-xs font-black text-white shadow-lg shadow-violet-500/20 sm:h-10 sm:w-10 sm:text-sm">
+                AI
+              </div>
+              <div className="hidden xs:block">
+                <p className="text-sm font-bold text-slate-900">AI Interview</p>
+                <p className="text-[10px] font-medium uppercase tracking-widest text-slate-400">Preparation</p>
+              </div>
+            </motion.div>
+
+            {/* Desktop navigation */}
+            <div className="hidden items-center gap-8 md:flex">
+              <NavLink href="#home">Home</NavLink>
+              <NavLink href="#features">Features</NavLink>
+              <NavLink href="#how-it-works">How It Works</NavLink>
             </div>
 
-            <div className="hidden sm:block">
-              <p className="text-sm font-bold text-slate-900">
-                AI Interview
-              </p>
+            {/* Right side: Buttons + Hamburger */}
+            <div className="flex items-center gap-2">
 
-              <p className="text-[10px] font-medium uppercase tracking-widest text-slate-400">
-                Preparation
-              </p>
+              {/* Login / Get Started – visible on all sizes */}
+              <motion.button
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => router.push("/login")}
+                className="rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 sm:px-4 sm:py-2.5 sm:text-sm"
+              >
+                Login
+              </motion.button>
+
+              <motion.button
+                whileHover={{ y: -2, scale: 1.02 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => router.push("/signup")}
+                className="rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-violet-500/20 transition sm:px-4 sm:py-2.5 sm:text-sm"
+              >
+                <span className="hidden sm:inline">Get Started</span>
+                <span className="sm:hidden">Start</span>
+              </motion.button>
+
+              {/* Hamburger – only on mobile/tablet (< md) */}
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setMobileMenuOpen((o) => !o)}
+                className="ml-1 flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 md:hidden"
+                aria-label="Toggle menu"
+                aria-expanded={mobileMenuOpen}
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  {mobileMenuOpen ? (
+                    <motion.span
+                      key="close"
+                      initial={{ rotate: -90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: 90, opacity: 0 }}
+                      transition={{ duration: 0.18 }}
+                    >
+                      <X size={18} />
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="open"
+                      initial={{ rotate: 90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: -90, opacity: 0 }}
+                      transition={{ duration: 0.18 }}
+                    >
+                      <Menu size={18} />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.button>
+
             </div>
-          </motion.div>
-
-          {/* Desktop navigation */}
-
-          <div className="hidden items-center gap-8 md:flex">
-
-            <NavLink href="#home">
-              Home
-            </NavLink>
-
-            <NavLink href="#features">
-              Features
-            </NavLink>
-
-            <NavLink href="#how-it-works">
-              How It Works
-            </NavLink>
           </div>
 
-          {/* Buttons */}
+          {/* Mobile drawer menu */}
+          <AnimatePresence initial={false}>
+            {mobileMenuOpen && (
+              <motion.div
+                key="mobile-menu"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+                className="overflow-hidden border-t border-slate-200/70 md:hidden"
+              >
+                <div className="flex flex-col gap-1 px-4 py-3">
+                  {[
+                    { href: "#home", label: "Home" },
+                    { href: "#features", label: "Features" },
+                    { href: "#how-it-works", label: "How It Works" },
+                  ].map((link) => (
+                    <motion.a
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      whileTap={{ scale: 0.97 }}
+                      className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-violet-50 hover:text-violet-700 active:bg-violet-100"
+                    >
+                      {link.label}
+                    </motion.a>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          <div className="flex items-center gap-2 sm:gap-3">
-
-            <motion.button
-              whileHover={{
-                y: -2,
-              }}
-              whileTap={{
-                scale: 0.95,
-              }}
-              onClick={() => router.push("/login")}
-              className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
-            >
-              Login
-            </motion.button>
-
-            <motion.button
-              whileHover={{
-                y: -2,
-                scale: 1.02,
-              }}
-              whileTap={{
-                scale: 0.96,
-              }}
-              onClick={() => router.push("/signup")}
-              className="rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-violet-500/20 transition"
-            >
-              Get Started
-            </motion.button>
-
-          </div>
         </div>
       </motion.nav>
 

@@ -567,8 +567,55 @@ def get_home_dashboard(
             (user_id,)
         )
         report = cursor.fetchone()
+
+        # First try in-memory coding report (from current session)
         from coding_router import user_coding_reports
         coding_rep = user_coding_reports.get(str(user_id))
+
+        # If not in memory (e.g. server restarted), fallback to DB
+        if not coding_rep:
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    user_id,
+                    overall_score,
+                    correctness_score,
+                    code_quality_score,
+                    problem_solving_score,
+                    explanation_score,
+                    time_complexity,
+                    space_complexity,
+                    feedback,
+                    strengths,
+                    improvements,
+                    next_difficulty,
+                    created_at
+                FROM coding_reports
+                WHERE user_id = %s
+                ORDER BY id DESC
+                LIMIT 1
+                """,
+                (user_id,)
+            )
+            db_coding_rep = cursor.fetchone()
+            if db_coding_rep:
+                # Map DB columns to the format the frontend expects
+                coding_rep = {
+                    "overall_score": db_coding_rep.get("overall_score", 0),
+                    "correctness_score": db_coding_rep.get("correctness_score", 0),
+                    "code_quality_score": db_coding_rep.get("code_quality_score", 0),
+                    "problem_solving_score": db_coding_rep.get("problem_solving_score", 0),
+                    "explanation_score": db_coding_rep.get("explanation_score", 0),
+                    "time_complexity": db_coding_rep.get("time_complexity", "O(N)"),
+                    "space_complexity": db_coding_rep.get("space_complexity", "O(1)"),
+                    "feedback": db_coding_rep.get("feedback", ""),
+                    "strengths": db_coding_rep.get("strengths", "").split("\n") if db_coding_rep.get("strengths") else [],
+                    "improvements": db_coding_rep.get("improvements", "").split("\n") if db_coding_rep.get("improvements") else [],
+                    "difficulty": db_coding_rep.get("next_difficulty", "Easy"),
+                    "language": "Python",
+                    "created_at": str(db_coding_rep.get("created_at", "")) if db_coding_rep.get("created_at") else None,
+                }
 
         return {
             "success": True,
