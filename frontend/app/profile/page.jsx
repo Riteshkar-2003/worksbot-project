@@ -440,15 +440,7 @@ export default function ProfilePage() {
             <div className="flex min-w-0 items-center gap-1.5 sm:gap-2 md:gap-3">
 
               {/* ADMIN DASHBOARD BUTTON – icon-only on mobile, full on md+ */}
-              <button
-                type="button"
-                onClick={() => router.push("/admin")}
-                className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 shadow-sm md:px-3"
-                title="Open Admin Dashboard"
-              >
-                <ShieldCheck size={15} className="text-violet-600 shrink-0" />
-                <span className="hidden md:inline">Admin Portal</span>
-              </button>
+              
 
               {/* INTERVIEW HISTORY BUTTON – icon-only on mobile, text on sm+ */}
               <button
