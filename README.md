@@ -208,12 +208,7 @@ worksbot_project/
 
 ---
 
-### 1. Clone the Repository
 
-```bash
-git clone https://github.com/Riteshkar-2003/worksbot-project.git
-cd worksbot_project
-```
 
 ---
 
