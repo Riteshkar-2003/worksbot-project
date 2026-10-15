@@ -21,8 +21,7 @@ from database import get_connection
 router = APIRouter(prefix="", tags=["Admin & Queries"])
 
 
-# ── Pydantic Request Models ──────────────────────────────────────────────────
-
+# pydantic request models 
 class CreateQueryRequest(BaseModel):
     user_id: int = Field(..., gt=0)
     subject: str = Field(..., min_length=2, max_length=255)
@@ -32,7 +31,7 @@ class CreateQueryRequest(BaseModel):
 
 
 class UpdateQueryRequest(BaseModel):
-    status: str = Field(..., max_length=50)  # Pending, In Review, Resolved
+    status: str = Field(..., max_length=50)  # pending, in review, resolved
     admin_response: Optional[str] = ""
 
 
@@ -45,7 +44,7 @@ class SaveResumeRequest(BaseModel):
     experience_level: Optional[str] = "Junior"
 
 
-# ── User-Side Query Endpoints ────────────────────────────────────────────────
+# user-side query endpoints 
 
 @router.post("/queries")
 def create_user_query(request: CreateQueryRequest):
@@ -56,7 +55,7 @@ def create_user_query(request: CreateQueryRequest):
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
 
-        # Verify user exists or fallback to id=1
+        
         cursor.execute("SELECT id FROM users WHERE id = %s", (request.user_id,))
         user_row = cursor.fetchone()
         actual_user_id = user_row["id"] if user_row else 1
@@ -174,7 +173,7 @@ def save_user_resume(request: SaveResumeRequest):
         if conn: conn.close()
 
 
-# ── Admin Dashboard Endpoints ────────────────────────────────────────────────
+# admin dashboard endpoints 
 
 @router.get("/admin/stats")
 def get_admin_dashboard_stats():
@@ -185,17 +184,17 @@ def get_admin_dashboard_stats():
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
 
-        # 1. Total users
+        
         cursor.execute("SELECT COUNT(*) as cnt FROM users")
         total_users = cursor.fetchone()["cnt"]
 
-        # 2. Total technical interview reports
+        
         cursor.execute("SELECT COUNT(*) as cnt, AVG(overall_score) as avg_tech FROM interview_reports")
         tech_row = cursor.fetchone()
         total_interviews = tech_row["cnt"]
         avg_tech_score = round(float(tech_row["avg_tech"] or 0), 1)
 
-        # 3. Total coding submissions and reports
+        
         cursor.execute("SELECT COUNT(*) as cnt FROM coding_submissions")
         total_coding_subs = cursor.fetchone()["cnt"]
 
@@ -204,7 +203,7 @@ def get_admin_dashboard_stats():
         total_coding_reports = code_row["cnt"]
         avg_coding_score = round(float(code_row["avg_code"] or 0), 1)
 
-        # 4. User queries / concerns
+        
         cursor.execute("SELECT COUNT(*) as cnt FROM user_queries")
         total_queries = cursor.fetchone()["cnt"]
 
@@ -217,11 +216,11 @@ def get_admin_dashboard_stats():
         cursor.execute("SELECT COUNT(*) as cnt FROM user_queries WHERE status = 'Resolved'")
         resolved_queries = cursor.fetchone()["cnt"]
 
-        # 5. Total resumes uploaded
+        
         cursor.execute("SELECT COUNT(*) as cnt FROM user_resumes")
         total_resumes = cursor.fetchone()["cnt"]
 
-        # 6. Recent activity timeline (latest 8 items across tables)
+        
         activities = []
         cursor.execute(
             """
@@ -356,7 +355,7 @@ def get_admin_user_details(user_id: int):
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        # Technical interview reports
+        
         cursor.execute(
             """
             SELECT * FROM interview_reports WHERE user_id = %s ORDER BY id DESC
@@ -365,7 +364,7 @@ def get_admin_user_details(user_id: int):
         )
         tech_reports = cursor.fetchall() or []
 
-        # Technical Q&A details
+        
         cursor.execute(
             """
             SELECT id, question_number, question, answer, difficulty, correct_answer, created_at
@@ -375,7 +374,7 @@ def get_admin_user_details(user_id: int):
         )
         qa_history = cursor.fetchall() or []
 
-        # Coding submissions
+        
         cursor.execute(
             """
             SELECT s.*, q.title as question_title, q.difficulty as question_difficulty
@@ -387,7 +386,7 @@ def get_admin_user_details(user_id: int):
         )
         coding_subs = cursor.fetchall() or []
 
-        # Coding reports
+        
         cursor.execute(
             """
             SELECT * FROM coding_reports WHERE user_id = %s ORDER BY id DESC
@@ -396,7 +395,7 @@ def get_admin_user_details(user_id: int):
         )
         coding_reps = cursor.fetchall() or []
 
-        # Resumes
+        
         cursor.execute(
             """
             SELECT id, filename, skills_detected, experience_level, uploaded_at, resume_json
@@ -406,7 +405,7 @@ def get_admin_user_details(user_id: int):
         )
         resumes = cursor.fetchall() or []
 
-        # Queries
+        
         cursor.execute(
             """
             SELECT * FROM user_queries WHERE user_id = %s ORDER BY id DESC

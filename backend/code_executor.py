@@ -30,48 +30,48 @@ from dotenv import load_dotenv
 load_dotenv()
 logger = logging.getLogger("code_executor")
 
-# ── Judge0 configuration ─────────────────────────────────────────────────────
+# judge0 configuration 
 JUDGE0_URL: str = os.getenv("JUDGE0_URL", "http://localhost:2358").rstrip("/")
 _SUBMISSIONS_ENDPOINT = f"{JUDGE0_URL}/submissions"
 
-# Timeout for individual Judge0 HTTP calls
+# timeout for individual judge0 http calls
 JUDGE0_HTTP_TIMEOUT: float = float(os.getenv("JUDGE0_HTTP_TIMEOUT", "10"))
 
-# Whether to try Judge0 and whether to allow automatic local fallback
+# Whether to try judge0 and whether to allow automatic local fallback
 USE_JUDGE0: bool = os.getenv("USE_JUDGE0", "false").lower() in ("true", "1", "yes")
 ENABLE_LOCAL_FALLBACK: bool = os.getenv("ENABLE_LOCAL_FALLBACK", "true").lower() in ("true", "1", "yes")
 
-# State tracking for Judge0 reachability to prevent blocking roundtrips when down
+# state tracking for judge0 reachability to prevent blocking roundtrips when down
 _judge0_healthy: Optional[bool] = None
 _judge0_last_check: float = 0.0
-JUDGE0_COOLDOWN_SECONDS: float = 300.0  # re-probe Judge0 every 5 mins when offline
+JUDGE0_COOLDOWN_SECONDS: float = 300.0  
 
-# ── Language ID mapping (Judge0 language IDs) ────────────────────────────────
+# language id mapping (judge0 language ids) 
 LANGUAGE_IDS: dict[str, int] = {
-    "python":     71,   # Python 3.8.1
-    "javascript": 63,   # JavaScript (Node.js 12.14.0)
-    "java":       62,   # Java (OpenJDK 13.0.1)
-    "cpp":        54,   # C++ (GCC 9.2.0)
-    "c++":        54,   # alias
-    "c":          50,   # C (GCC 9.2.0)
-    "js":         63,   # alias
-    "node":       63,   # alias
+    "python":     71,   
+    "javascript": 63,   
+    "java":       62,   
+    "cpp":        54,   
+    "c++":        54,   
+    "c":          50,   
+    "js":         63,   
+    "node":       63,   
 }
 
-# ── Judge0 status IDs → platform status strings ──────────────────────────────
+# judge0 status ids → platform status strings 
 _JUDGE0_STATUS: dict[int, str] = {
     1:  "In Queue",
     2:  "Processing",
-    3:  "Passed",            # Accepted
+    3:  "Passed",            
     4:  "Wrong Answer",
     5:  "Time Limit Exceeded",
     6:  "Compilation Error",
-    7:  "Runtime Error",     # SIGSEGV
-    8:  "Runtime Error",     # SIGXFSZ
-    9:  "Runtime Error",     # SIGFPE
-    10: "Runtime Error",     # SIGABRT
-    11: "Runtime Error",     # NZEC
-    12: "Runtime Error",     # Other
+    7:  "Runtime Error",     
+    8:  "Runtime Error",     
+    9:  "Runtime Error",     
+    10: "Runtime Error",     
+    11: "Runtime Error",     
+    12: "Runtime Error",     
     13: "Internal Error",
     14: "Execution Format Error",
 }
@@ -81,7 +81,6 @@ _TLE_IDS = {5}
 _FINISHED_IDS = {3, 4}
 
 
-# ── Toolchain Auto-Discovery ──────────────────────────────────────────────────
 
 _TOOLCHAIN_CACHE: dict[str, Optional[str]] = {}
 
@@ -97,14 +96,14 @@ def _find_binary(binary_names: list[str]) -> Optional[str]:
     if cache_key in _TOOLCHAIN_CACHE:
         return _TOOLCHAIN_CACHE[cache_key]
 
-    # 1. Standard PATH lookup
+   
     for b in binary_names:
         found = shutil.which(b)
         if found:
             _TOOLCHAIN_CACHE[cache_key] = found
             return found
 
-    # 2. WinGet Packages and Links in %LOCALAPPDATA%
+   
     local_app_data = os.environ.get("LOCALAPPDATA", "")
     if local_app_data:
         winget_pkgs = os.path.join(local_app_data, "Microsoft", "WinGet", "Packages")
@@ -115,13 +114,13 @@ def _find_binary(binary_names: list[str]) -> Optional[str]:
                 _TOOLCHAIN_CACHE[cache_key] = link_candidate
                 return link_candidate
 
-            # Search in extracted WinGet packages (e.g. LLVM-MinGW)
+          
             matches = glob.glob(os.path.join(winget_pkgs, "**", f"{b}.exe"), recursive=True)
             if matches:
                 _TOOLCHAIN_CACHE[cache_key] = matches[0]
                 return matches[0]
 
-    # 3. Known standard directories
+  
     std_dirs = [
         r"C:\Program Files\nodejs",
         r"C:\Program Files (x86)\nodejs",
@@ -134,7 +133,7 @@ def _find_binary(binary_names: list[str]) -> Optional[str]:
         r"C:\w64devkit\bin",
     ]
 
-    # 3b. Dynamically discover Java JDK installations (Adoptium, Microsoft, Oracle)
+   
     java_base_dirs = [
         r"C:\Program Files\Eclipse Adoptium",
         r"C:\Program Files\Microsoft",
@@ -169,7 +168,7 @@ def _get_execution_env(binary_path: Optional[str]) -> dict:
     return env
 
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
+
 
 def _normalize_language(language: str) -> str:
     """Return a canonical lower-case language key used across executors."""
@@ -249,7 +248,7 @@ def _mark_judge0_failure():
     _judge0_last_check = time.time()
 
 
-# ── Local Execution Engine ───────────────────────────────────────────────────
+
 
 def _run_local_python(code: str, stdin: str, timeout: int = 5) -> dict:
     wall_start = time.monotonic()
@@ -319,10 +318,10 @@ def _run_local_javascript(code: str, stdin: str, timeout: int = 5) -> dict:
             "error": "Node.js is not installed or not found in system paths.",
         }
 
-    # Normalize Linux /dev/stdin pattern to 0 for Windows compatibility
+   
     sanitized_code = re.sub(r"""['"]/dev/stdin['"]""", "0", code)
 
-    # Detect ES Module import/export
+   
     is_esm = bool(re.search(r"^\s*(?:import|export)\s+", sanitized_code, re.MULTILINE))
     ext = "mjs" if is_esm else "js"
 
@@ -401,7 +400,7 @@ def _run_local_java(code: str, stdin: str, timeout: int = 5) -> dict:
     env = _get_execution_env(javac_bin)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        # Detect declared class name
+       
         match = re.search(r'public\s+(?:final\s+)?class\s+([A-Za-z_][A-Za-z0-9_]*)', code)
         if match:
             class_name = match.group(1)
@@ -413,11 +412,11 @@ def _run_local_java(code: str, stdin: str, timeout: int = 5) -> dict:
         with open(source_path, "w", encoding="utf-8") as f:
             f.write(code)
 
-        # Use a generous compile timeout (compilation can be slow on Windows)
+     
         compile_timeout = max(timeout, 30)
 
         try:
-            # 1. Compile with javac
+      
             compile_proc = subprocess.run(
                 [javac_bin, f"{class_name}.java"],
                 capture_output=True,
@@ -438,7 +437,7 @@ def _run_local_java(code: str, stdin: str, timeout: int = 5) -> dict:
                     "error": compile_proc.stderr.strip() or "Java compilation failed.",
                 }
 
-            # 2. Run with java
+          
             run_proc = subprocess.run(
                 [java_bin, "-cp", tmp_dir, class_name],
                 input=stdin,
@@ -515,11 +514,11 @@ def _run_local_c_cpp(code: str, language: str, stdin: str, timeout: int = 5) -> 
         with open(src_path, "w", encoding="utf-8") as f:
             f.write(code)
 
-        # Use a generous compile timeout (GCC/G++ can be slow on Windows due to AV scanning)
+      
         compile_timeout = max(timeout, 30)
 
         try:
-            # 1. Compile
+         
             compile_proc = subprocess.run(
                 [compiler, "-O2", src_path, "-o", exe_path],
                 capture_output=True,
@@ -540,7 +539,7 @@ def _run_local_c_cpp(code: str, language: str, stdin: str, timeout: int = 5) -> 
                     "error": compile_proc.stderr.strip() or "C/C++ compilation failed.",
                 }
 
-            # 2. Execute binary
+         
             run_proc = subprocess.run(
                 [exe_path],
                 input=stdin,
@@ -612,7 +611,7 @@ def _execute_locally(code: str, language: str, stdin: str, timeout: int = 5) -> 
         }
 
 
-# ── Core Judge0 submission (async) ───────────────────────────────────────────
+
 
 async def _submit_to_judge0(
     source_code: str,
@@ -641,7 +640,7 @@ async def _submit_to_judge0(
         return response.json()
 
 
-# ── Public API: execute_single_test_case (async) ─────────────────────────────
+
 
 async def execute_single_test_case_async(
     code: str,
@@ -674,7 +673,7 @@ async def execute_single_test_case_async(
     wall_start = time.monotonic()
     result = None
 
-    # 1. Attempt Judge0 if enabled and not currently in cooldown
+    
     if _should_try_judge0():
         try:
             result = await _submit_to_judge0(
@@ -708,7 +707,7 @@ async def execute_single_test_case_async(
                     execution_time=round(time.monotonic() - wall_start, 3),
                 )
 
-    # 2. If Judge0 succeeded, parse Judge0 response
+   
     if result is not None:
         status_obj    = result.get("status") or {}
         status_id     = int(status_obj.get("id", 0))
@@ -760,7 +759,7 @@ async def execute_single_test_case_async(
             "status":         "Passed" if passed else "Wrong Answer",
         }
 
-    # 3. Fallback: Local Sandboxed Execution Engine
+   
     local_res = _execute_locally(
         code=code,
         language=language,
@@ -800,7 +799,7 @@ async def execute_single_test_case_async(
             "status":         status,
         }
 
-    # Program exited normally — verify stdout against expected output
+   
     passed = _outputs_match(stdout, expected_clean)
 
     return {
@@ -812,7 +811,7 @@ async def execute_single_test_case_async(
     }
 
 
-# ── Synchronous wrapper ───────────────────────────────────────────────────────
+
 
 def execute_single_test_case(
     code: str,
@@ -849,7 +848,7 @@ def execute_single_test_case(
         )
 
 
-# ── Public API: run_test_suite ────────────────────────────────────────────────
+
 
 def run_test_suite(
     code: str,
@@ -920,7 +919,7 @@ def run_test_suite(
     }
 
 
-# ── Public API: execute_code_custom_input ────────────────────────────────────
+
 
 def execute_code_custom_input(
     code: str,

@@ -287,7 +287,7 @@ def generate_first_question(
     compact_resume = build_compact_resume(resume_data)
     sections = get_resume_sections(resume_data)
 
-    # Retrieve knowledge base concepts matching candidate's skills
+  
     skills = list(resume_data.get("skills", [])) + list(resume_data.get("programming_languages", [])) + list(resume_data.get("technologies", []))
     rag_context = get_rag_context(skills=skills, difficulty=difficulty, top_k=4)
 
@@ -330,7 +330,7 @@ def analyze_answer(
     current_difficulty
 ):
 
-    # Retrieve ground-truth knowledge from RAG to analyze the candidate's answer
+ 
     rag_context = retrieve_answer_analysis_knowledge(question, candidate_answer, top_k=3)
 
     prompt = f"""

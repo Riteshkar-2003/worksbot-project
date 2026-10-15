@@ -6,7 +6,6 @@ import re
 import threading
 import time
 
-# Judge0-backed code execution — replaces all subprocess/docker logic
 from code_executor import execute_single_test_case, run_test_suite, execute_code_custom_input
 
 from coding_question_generator import generate_coding_question
@@ -85,9 +84,6 @@ def sanitize_question_for_client(question: Any) -> Any:
     return client_q
 
 
-# execute_single_test_case and run_test_suite are now imported from
-# code_executor.py which delegates all execution to the Judge0 sandbox.
-# The function signatures are identical — all call-sites below are unchanged.
 
 
 
@@ -258,8 +254,7 @@ def start_coding_interview(request: StartCodingRequest):
             existing_submissions = user_coding_sessions.get(user_key, [])
             now = time.time()
 
-            # If user already has an active question generated within the last 30 seconds
-            # and hasn't submitted any answer yet, reuse it to prevent duplicate generation
+           
             if (
                 existing
                 and not existing_submissions
@@ -558,7 +553,7 @@ def submit_coding_answer(request: SubmitCodingRequest):
 
 
 
-# STOP INTERVIEW
+
 
 @app.post("/stop/{user_id}")
 def stop_coding_interview(
@@ -596,7 +591,7 @@ def stop_coding_interview(
 
         save_coding_report(user_id=user_id, report=report)
 
-        # Also persist final coding report into MySQL database
+    
         save_coding_report_db(
             user_id=user_id,
             question_id=meta.get("question_id", 1),
@@ -622,13 +617,12 @@ def stop_coding_interview(
 
 
 
-# RUN CODING (MULTI-LANGUAGE RUNNER)
+
 
 
 @app.post("/run")
 def run_code(request: RunCodeRequest):
     try:
-        # 1. Custom test case input
         if request.custom_input is not None and request.custom_input.strip():
             custom_res = execute_code_custom_input(
                 code=request.code,
@@ -644,7 +638,7 @@ def run_code(request: RunCodeRequest):
                 "execution_time": custom_res["execution_time"]
             }
 
-        # 2. Extract sample test cases from question in request or user session
+
         user_key = str(request.user_id) if request.user_id is not None else None
         sample_tests = []
 
@@ -655,7 +649,7 @@ def run_code(request: RunCodeRequest):
             if isinstance(curr_q, dict):
                 sample_tests = curr_q.get("sample_test_cases") or curr_q.get("examples") or []
 
-        # If sample tests are present, run against all visible sample test cases!
+       
         if sample_tests:
             suite_res = run_test_suite(
                 code=request.code,
@@ -693,7 +687,7 @@ def run_code(request: RunCodeRequest):
                 "execution_time": total_time
             }
 
-        # Fallback: simple execution if no sample tests found (no expected_output comparison)
+      
         fallback_res = execute_code_custom_input(
             code=request.code,
             language=request.language,

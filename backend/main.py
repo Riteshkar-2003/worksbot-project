@@ -73,7 +73,7 @@ class AdminLoginRequest(BaseModel):
     password: str
 
 
-# ── Admin Auth Endpoints ─────────────────────────────────────────────────────
+
 
 @app.post("/admin/auth/login")
 def admin_login(request: AdminLoginRequest):
@@ -147,7 +147,7 @@ class CreateAdminRequest(BaseModel):
     email: str
     password: str
     full_name: Optional[str] = "Administrator"
-    token: str  # Existing admin JWT to authorize this action
+    token: str 
 
 
 @app.post("/admin/auth/create-admin")
@@ -159,7 +159,7 @@ def create_admin_user(request: CreateAdminRequest):
     import jwt as _jwt
     from admin_auth import hash_admin_password
 
-    # 1. Validate the caller's admin token
+   
     try:
         decode_admin_token(request.token)
     except _jwt.ExpiredSignatureError:
@@ -167,7 +167,7 @@ def create_admin_user(request: CreateAdminRequest):
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid admin token. Only authenticated admins can create new admins.")
 
-    # 2. Validate inputs
+   
     username = request.username.strip().lower()
     email = request.email.strip().lower()
     password = request.password
@@ -180,14 +180,14 @@ def create_admin_user(request: CreateAdminRequest):
     if not password or len(password) < 8:
         raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
 
-    # 3. Insert into admin_users
+   
     connection = None
     cursor = None
     try:
         connection = get_connection()
         cursor = connection.cursor(dictionary=True)
 
-        # Check for duplicate username or email
+     
         cursor.execute(
             "SELECT id FROM admin_users WHERE username = %s OR email = %s LIMIT 1",
             (username, email)
@@ -418,7 +418,7 @@ async def upload_resume(
 
         coding_eligibility = check_coding_skills_eligibility(resume_data, resume_text)
 
-        # Auto-save resume to MySQL user_resumes table for admin oversight
+       
         try:
             conn = get_connection()
             cur = conn.cursor()
@@ -535,7 +535,7 @@ def evaluate_answer(
             request.current_difficulty
         )
 
-        # Persist technical interview question and candidate answer into MySQL with correct_answer
+      
         correct_answer = evaluation.get("correct_answer") or ""
         save_interview_answer_db(
             user_id=request.user_id,
@@ -729,11 +729,11 @@ def get_home_dashboard(
         )
         report = cursor.fetchone()
 
-        # First try in-memory coding report (from current session)
+       
         from coding_router import user_coding_reports
         coding_rep = user_coding_reports.get(str(user_id))
 
-        # If not in memory (e.g. server restarted), fallback to DB
+     
         if not coding_rep:
             cursor.execute(
                 """
@@ -761,7 +761,7 @@ def get_home_dashboard(
             )
             db_coding_rep = cursor.fetchone()
             if db_coding_rep:
-                # Map DB columns to the format the frontend expects
+              
                 coding_rep = {
                     "overall_score": db_coding_rep.get("overall_score", 0),
                     "correctness_score": db_coding_rep.get("correctness_score", 0),

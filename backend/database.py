@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Track whether initialization has succeeded
+
 _db_initialized: bool = False
 
 TABLE_CREATION_QUERIES = [
@@ -189,7 +189,6 @@ def init_db():
     db_conn = None
 
     try:
-        # Step 1: Connect to MySQL server (without selecting database) to ensure database exists
         server_conn = mysql.connector.connect(
             host=cfg["host"],
             port=cfg["port"],
@@ -207,7 +206,7 @@ def init_db():
         server_conn.close()
         server_conn = None
 
-        # Step 2: Connect to the target database and create tables
+       
         db_conn = mysql.connector.connect(
             host=cfg["host"],
             port=cfg["port"],
@@ -220,14 +219,14 @@ def init_db():
         for query in TABLE_CREATION_QUERIES:
             cursor.execute(query)
 
-        # Step 3: Ensure default fallback user exists (id=1) for foreign key integrity
+     
         seed_user_query = """
         INSERT IGNORE INTO users (id, name, email, password_hash)
         VALUES (1, 'Candidate', 'candidate@interview.ai', '');
         """
         cursor.execute(seed_user_query)
 
-        # Step 4: Ensure default admin user exists
+       
         import bcrypt as _bcrypt
         _admin_pass = _bcrypt.hashpw(b"Admin@WorksBot2024", _bcrypt.gensalt()).decode("utf-8")
         seed_admin_query = """

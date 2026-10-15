@@ -11,12 +11,12 @@ sys.path.insert(0, "e:/final_project_1/backend")
 from admin_auth import hash_admin_password
 from database import get_connection
 
-# ── New admin credentials ──────────────────────────────────────────────────────
+
 USERNAME  = "superadmin"
 EMAIL     = "superadmin@worksbot.ai"
 PASSWORD  = "WorksBot@Admin#2024"
 FULL_NAME = "Super Administrator"
-# ──────────────────────────────────────────────────────────────────────────────
+
 
 def create_admin():
     pw_hash = hash_admin_password(PASSWORD)

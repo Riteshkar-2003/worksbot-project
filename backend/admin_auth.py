@@ -15,7 +15,7 @@ import jwt
 from datetime import datetime, timedelta, timezone
 from database import get_connection
 
-# ── JWT configuration ─────────────────────────────────────────────────────────
+# JWT configuration 
 # Uses a separate secret from user JWTs (if any). Falls back to a strong default.
 ADMIN_JWT_SECRET = os.getenv(
     "ADMIN_JWT_SECRET",
@@ -25,7 +25,7 @@ ADMIN_JWT_ALGORITHM = "HS256"
 ADMIN_TOKEN_EXPIRE_HOURS = 8
 
 
-# ── Password helpers ──────────────────────────────────────────────────────────
+# password helpers 
 
 def hash_admin_password(password: str) -> str:
     """Hash a plain-text password using bcrypt."""
@@ -40,7 +40,7 @@ def verify_admin_password(plain: str, hashed: str) -> bool:
         return False
 
 
-# ── JWT helpers ───────────────────────────────────────────────────────────────
+# JWT helpers 
 
 def create_admin_token(admin_id: int, username: str) -> str:
     """
@@ -67,7 +67,7 @@ def decode_admin_token(token: str) -> dict:
     return jwt.decode(token, ADMIN_JWT_SECRET, algorithms=[ADMIN_JWT_ALGORITHM])
 
 
-# ── Login logic ───────────────────────────────────────────────────────────────
+# login logic 
 
 def login_admin(username: str, password: str) -> dict:
     """
@@ -88,7 +88,7 @@ def login_admin(username: str, password: str) -> dict:
         connection = get_connection()
         cursor = connection.cursor(dictionary=True)
 
-        # Allow login by username OR email
+       
         cursor.execute(
             """
             SELECT id, username, email, password_hash, full_name, is_active
@@ -109,7 +109,7 @@ def login_admin(username: str, password: str) -> dict:
         if not verify_admin_password(password, admin["password_hash"]):
             return {"success": False, "message": "Invalid username or password"}
 
-        # Update last_login timestamp
+       
         cursor.execute(
             "UPDATE admin_users SET last_login = CURRENT_TIMESTAMP WHERE id = %s",
             (admin["id"],),

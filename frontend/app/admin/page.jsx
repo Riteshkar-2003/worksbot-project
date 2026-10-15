@@ -52,14 +52,14 @@ import {
 export default function AdminDashboardPage() {
   const router = useRouter();
 
-  // Auth guard state
+ 
   const [authChecked, setAuthChecked] = useState(false);
   const [adminUser, setAdminUser] = useState(null);
 
-  // Active top navigation tab
-  const [activeTab, setActiveTab] = useState("queries"); // 'overview', 'queries', 'users', 'interviews', 'coding', 'resumes'
+ 
+  const [activeTab, setActiveTab] = useState("queries"); 
 
-  // Data states
+  
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState(null);
@@ -70,31 +70,31 @@ export default function AdminDashboardPage() {
   const [resumes, setResumes] = useState([]);
   const [queries, setQueries] = useState([]);
 
-  // Queries Filter & Search
+ 
   const [queryStatusFilter, setQueryStatusFilter] = useState("all");
   const [querySearch, setQuerySearch] = useState("");
 
-  // Modals state
+ 
   const [selectedQuery, setSelectedQuery] = useState(null);
   const [updatingQuery, setUpdatingQuery] = useState(false);
   const [adminReplyText, setAdminReplyText] = useState("");
   const [adminStatusSelect, setAdminStatusSelect] = useState("In Review");
   const [updateSuccessMsg, setUpdateSuccessMsg] = useState("");
 
-  // User detail modal state
+  
   const [selectedUserDetail, setSelectedUserDetail] = useState(null);
   const [loadingUserDetail, setLoadingUserDetail] = useState(false);
 
-  // Code inspection modal state
+  
   const [inspectedCode, setInspectedCode] = useState(null);
 
-  // Resume inspection modal state
+ 
   const [inspectedResume, setInspectedResume] = useState(null);
 
-  // Notification banner
+ 
   const [notification, setNotification] = useState("");
 
-  // ── Auth guard: verify admin token on mount ──────────────────────────────
+
   useEffect(() => {
     const checkAdminAuth = async () => {
       try {
@@ -110,7 +110,7 @@ export default function AdminDashboardPage() {
           router.replace("/admin/login");
           return;
         }
-        // Restore admin user info from localStorage
+        
         try {
           const storedAdmin = localStorage.getItem("admin_user");
           if (storedAdmin) setAdminUser(JSON.parse(storedAdmin));
@@ -127,7 +127,7 @@ export default function AdminDashboardPage() {
     checkAdminAuth();
   }, []);
 
-  // ── Logout handler ───────────────────────────────────────────────────────
+ 
   const handleAdminLogout = async () => {
     try {
       await adminLogout();
@@ -184,7 +184,7 @@ export default function AdminDashboardPage() {
     setTimeout(() => setNotification(""), 4000);
   };
 
-  // Filter queries based on tab and search
+
   const filteredQueries = queries.filter((q) => {
     const matchStatus =
       queryStatusFilter === "all" ||
@@ -198,7 +198,7 @@ export default function AdminDashboardPage() {
     return matchStatus && matchSearch;
   });
 
-  // Open Query Response Modal
+ 
   const openQueryModal = (query) => {
     setSelectedQuery(query);
     setAdminReplyText(query.admin_response || "");
@@ -206,7 +206,7 @@ export default function AdminDashboardPage() {
     setUpdateSuccessMsg("");
   };
 
-  // Submit Admin Query Resolution
+ 
   const handleSaveQueryUpdate = async () => {
     if (!selectedQuery) return;
     try {
@@ -218,12 +218,12 @@ export default function AdminDashboardPage() {
 
       if (res && res.success) {
         setUpdateSuccessMsg("Concern updated! Candidate can view the response in their profile.");
-        // Update local query state immediately
+      
         setQueries((prev) =>
           prev.map((q) => (q.id === selectedQuery.id ? res.query : q))
         );
         setSelectedQuery(res.query);
-        // Refresh stats
+       
         const statsRes = await getAdminStats();
         if (statsRes?.success) setStats(statsRes.stats);
       }
@@ -234,12 +234,12 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Quick reply template applier
+ 
   const applyTemplate = (text) => {
     setAdminReplyText((prev) => (prev ? prev + "\n" + text : text));
   };
 
-  // Delete query
+  
   const handleDeleteQuery = async (queryId) => {
     if (!confirm("Are you sure you want to delete this concern record?")) return;
     try {
@@ -251,7 +251,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // View user deep dive
+  
   const handleViewUser = async (userId) => {
     try {
       setLoadingUserDetail(true);
@@ -266,7 +266,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Show auth loading screen while checking token
+  
   if (!authChecked) {
     return (
       <div className="min-h-screen bg-[#0d0e15] flex items-center justify-center">
@@ -465,9 +465,6 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* =========================================================
-            TAB 1: USER QUERIES & CONCERNS (CENTRAL BUSINESS REQUIREMENT)
-           ========================================================= */}
         {activeTab === "queries" && (
           <div className="space-y-6">
             {/* Header & Controls */}
@@ -645,9 +642,6 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* =========================================================
-            TAB 2: OVERVIEW & ANALYTICS
-           ========================================================= */}
         {activeTab === "overview" && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -746,9 +740,7 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* =========================================================
-            TAB 3: CANDIDATES / USERS MANAGEMENT
-           ========================================================= */}
+       
         {activeTab === "users" && (
           <div className="rounded-3xl border border-gray-800 bg-[#141522] overflow-hidden shadow-xl">
             <div className="p-6 border-b border-gray-800 flex items-center justify-between">
@@ -818,9 +810,7 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* =========================================================
-            TAB 4: TECHNICAL INTERVIEWS OVERSIGHT
-           ========================================================= */}
+      
         {activeTab === "interviews" && (
           <div className="rounded-3xl border border-gray-800 bg-[#141522] overflow-hidden shadow-xl">
             <div className="p-6 border-b border-gray-800 flex items-center justify-between">
@@ -883,9 +873,7 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* =========================================================
-            TAB 5: CODING CHALLENGES OVERSIGHT
-           ========================================================= */}
+       
         {activeTab === "coding" && (
           <div className="rounded-3xl border border-gray-800 bg-[#141522] overflow-hidden shadow-xl">
             <div className="p-6 border-b border-gray-800 flex items-center justify-between">
@@ -968,9 +956,7 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* =========================================================
-            TAB 6: UPLOADED RESUMES
-           ========================================================= */}
+     
         {activeTab === "resumes" && (
           <div className="rounded-3xl border border-gray-800 bg-[#141522] overflow-hidden shadow-xl">
             <div className="p-6 border-b border-gray-800 flex items-center justify-between">
@@ -1042,9 +1028,7 @@ export default function AdminDashboardPage() {
         )}
       </main>
 
-      {/* =========================================================
-          MODAL 1: ADMIN CONCERN REVIEW & RESOLUTION DIALOG
-         ========================================================= */}
+    
       <AnimatePresence>
         {selectedQuery && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
@@ -1222,9 +1206,7 @@ export default function AdminDashboardPage() {
         )}
       </AnimatePresence>
 
-      {/* =========================================================
-          MODAL 2: USER PROFILE & HISTORY DRILL-DOWN
-         ========================================================= */}
+    
       <AnimatePresence>
         {selectedUserDetail && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
@@ -1337,9 +1319,7 @@ export default function AdminDashboardPage() {
         )}
       </AnimatePresence>
 
-      {/* =========================================================
-          MODAL 3: CODE INSPECTOR DIALOG
-         ========================================================= */}
+      
       <AnimatePresence>
         {inspectedCode && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
@@ -1390,9 +1370,7 @@ export default function AdminDashboardPage() {
         )}
       </AnimatePresence>
 
-      {/* =========================================================
-          MODAL 4: RESUME INSPECTOR DIALOG
-         ========================================================= */}
+     
       <AnimatePresence>
         {inspectedResume && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">

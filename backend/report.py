@@ -124,7 +124,7 @@ def save_interview_answer_db(user_id, question_number, question, answer, difficu
         q_text = question if isinstance(question, str) else json.dumps(question)
         eval_json = json.dumps(evaluation) if isinstance(evaluation, (dict, list)) else str(evaluation or "{}")
 
-        # Resolve correct_answer from arg or evaluation dict
+      
         c_ans = correct_answer
         if not c_ans and isinstance(evaluation, dict):
             c_ans = evaluation.get("correct_answer") or evaluation.get("ideal_answer") or ""
@@ -277,7 +277,7 @@ def get_interview_history_all(user_id):
     connection = get_connection()
     cursor = connection.cursor(dictionary=True)
 
-    # 1. Technical Interview History
+ 
     tech_query = """
         SELECT
             id,
@@ -305,7 +305,7 @@ def get_interview_history_all(user_id):
             except Exception:
                 pass
         
-        # If correct_answer column was empty, fallback to evaluation dictionary or synthesized knowledge
+       
         c_ans = row.get("correct_answer")
         if not c_ans and isinstance(eval_data, dict):
             c_ans = eval_data.get("correct_answer") or eval_data.get("ideal_answer") or ""
@@ -338,7 +338,7 @@ def get_interview_history_all(user_id):
             "created_at": created_str
         })
 
-    # 2. Coding Interview History
+   
     coding_query = """
         SELECT
             s.id AS submission_id,
@@ -388,7 +388,7 @@ def get_interview_history_all(user_id):
 
         sub_time = crow["submitted_at"].isoformat() if crow.get("submitted_at") else ""
         
-        # Parse examples if JSON string
+       
         ex_data = crow.get("examples")
         if isinstance(ex_data, str):
             try:
@@ -495,4 +495,4 @@ def get_interview_history_all(user_id):
         "coding_history": coding_history,
         "total_technical": len(technical_history),
         "total_coding": len(coding_history),
-    }
+    }

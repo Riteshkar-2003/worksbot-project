@@ -26,7 +26,7 @@ export default function AdminLoginPage() {
   const [checkingSession, setCheckingSession] = useState(true);
   const usernameRef = useRef(null);
 
-  // ── On mount: if a valid admin token already exists, skip login ──────────
+
   useEffect(() => {
     const validateExistingSession = async () => {
       try {
@@ -39,7 +39,7 @@ export default function AdminLoginPage() {
           }
         }
       } catch {
-        // Token invalid or expired – clear it
+      
         localStorage.removeItem("admin_token");
         localStorage.removeItem("admin_user");
       } finally {
@@ -49,14 +49,14 @@ export default function AdminLoginPage() {
     validateExistingSession();
   }, [router]);
 
-  // Auto-focus username field once loaded
+ 
   useEffect(() => {
     if (!checkingSession && usernameRef.current) {
       usernameRef.current.focus();
     }
   }, [checkingSession]);
 
-  // ── Form submit ──────────────────────────────────────────────────────────
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -78,10 +78,10 @@ export default function AdminLoginPage() {
       const result = await adminLogin(trimmedUsername, trimmedPassword);
 
       if (result?.success && result?.token) {
-        // Persist token and admin info in localStorage
+      
         localStorage.setItem("admin_token", result.token);
         localStorage.setItem("admin_user", JSON.stringify(result.admin));
-        // Redirect to admin dashboard
+      
         router.replace("/admin");
       } else {
         setError(result?.message || "Login failed. Please try again.");
@@ -93,7 +93,7 @@ export default function AdminLoginPage() {
     }
   };
 
-  // ── Loading screen while validating existing session ────────────────────
+ 
   if (checkingSession) {
     return (
       <div className="min-h-screen bg-[#0a0b12] flex items-center justify-center">
@@ -108,12 +108,12 @@ export default function AdminLoginPage() {
 
   return (
     <div className="relative min-h-screen bg-[#0a0b12] flex items-center justify-center overflow-hidden px-4">
-      {/* ── Ambient background glows ──────────────────────────────────────── */}
+     
       <div className="pointer-events-none absolute -top-60 left-1/3 h-[600px] w-[600px] rounded-full bg-violet-700/10 blur-[140px]" />
       <div className="pointer-events-none absolute bottom-0 right-1/4 h-[500px] w-[500px] rounded-full bg-indigo-700/10 blur-[140px]" />
       <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[300px] rounded-full bg-purple-800/8 blur-[100px]" />
 
-      {/* ── Floating particles ────────────────────────────────────────────── */}
+     
       {[...Array(8)].map((_, i) => (
         <motion.div
           key={i}
@@ -137,7 +137,7 @@ export default function AdminLoginPage() {
         />
       ))}
 
-      {/* ── Login Card ────────────────────────────────────────────────────── */}
+    
       <motion.div
         initial={{ opacity: 0, y: 32, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -152,7 +152,7 @@ export default function AdminLoginPage() {
           <div className="h-1 w-full bg-gradient-to-r from-violet-600 via-indigo-500 to-purple-600" />
 
           <div className="p-8 sm:p-10">
-            {/* ── Header ──────────────────────────────────────────────────── */}
+           
             <div className="mb-8 text-center">
               {/* Icon */}
               <motion.div
@@ -183,7 +183,7 @@ export default function AdminLoginPage() {
               </motion.div>
             </div>
 
-            {/* ── Error Banner ─────────────────────────────────────────────── */}
+           
             <AnimatePresence mode="wait">
               {error && (
                 <motion.div
@@ -202,7 +202,7 @@ export default function AdminLoginPage() {
               )}
             </AnimatePresence>
 
-            {/* ── Form ─────────────────────────────────────────────────────── */}
+           
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               {/* Username */}
               <motion.div
@@ -314,7 +314,7 @@ export default function AdminLoginPage() {
               </motion.div>
             </form>
 
-            {/* ── Security notice ───────────────────────────────────────────── */}
+            
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -331,7 +331,7 @@ export default function AdminLoginPage() {
               </div>
             </motion.div>
 
-            {/* ── Back to user login link ───────────────────────────────────── */}
+           
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -348,7 +348,7 @@ export default function AdminLoginPage() {
           </div>
         </div>
 
-        {/* ── Footer ────────────────────────────────────────────────────────── */}
+       
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

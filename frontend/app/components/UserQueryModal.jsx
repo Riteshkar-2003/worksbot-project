@@ -43,7 +43,6 @@ export default function UserQueryModal({ isOpen: externalIsOpen, onClose: extern
     setInternalIsOpen(true);
   };
 
-  // Form state
   const [subject, setSubject] = useState("");
   const [category, setCategory] = useState("Interview Report Query");
   const [urgency, setUrgency] = useState("Medium");
@@ -114,7 +113,6 @@ export default function UserQueryModal({ isOpen: externalIsOpen, onClose: extern
 
   return (
     <>
-      {/* Floating Support Button when not controlled externally */}
       {!isControlled && (
         <motion.button
           onClick={handleOpen}
@@ -136,11 +134,9 @@ export default function UserQueryModal({ isOpen: externalIsOpen, onClose: extern
         </motion.button>
       )}
 
-      {/* Query Modal Overlay */}
       <AnimatePresence>
         {isOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -149,7 +145,6 @@ export default function UserQueryModal({ isOpen: externalIsOpen, onClose: extern
               className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
             />
 
-            {/* Modal Card */}
             <motion.div
               initial={{ opacity: 0, scale: 0.94, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -157,7 +152,6 @@ export default function UserQueryModal({ isOpen: externalIsOpen, onClose: extern
               transition={{ duration: 0.25 }}
               className="relative z-10 w-full max-w-2xl overflow-hidden rounded-3xl border border-white/80 bg-white/95 p-6 shadow-2xl backdrop-blur-2xl sm:p-8"
             >
-              {/* Header */}
               <div className="flex items-start justify-between border-b border-slate-100 pb-5">
                 <div className="flex items-center gap-3.5">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-200">
@@ -182,10 +176,8 @@ export default function UserQueryModal({ isOpen: externalIsOpen, onClose: extern
                 </button>
               </div>
 
-              {/* Body */}
               <div className="mt-6">
                 {submittedQuery ? (
-                  /* Success View */
                   <motion.div
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -228,7 +220,6 @@ export default function UserQueryModal({ isOpen: externalIsOpen, onClose: extern
                     </div>
                   </motion.div>
                 ) : (
-                  /* Query Form View */
                   <form onSubmit={handleSubmit} className="space-y-5">
                     {error && (
                       <div className="flex items-center gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3.5 text-xs font-semibold text-red-700">
@@ -237,7 +228,6 @@ export default function UserQueryModal({ isOpen: externalIsOpen, onClose: extern
                       </div>
                     )}
 
-                    {/* Subject */}
                     <div>
                       <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
                         Subject / Brief Title *
@@ -252,7 +242,6 @@ export default function UserQueryModal({ isOpen: externalIsOpen, onClose: extern
                       />
                     </div>
 
-                    {/* Category & Urgency */}
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
                         <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
@@ -298,7 +287,6 @@ export default function UserQueryModal({ isOpen: externalIsOpen, onClose: extern
                       </div>
                     </div>
 
-                    {/* Detailed Description */}
                     <div>
                       <div className="flex items-center justify-between">
                         <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
@@ -318,7 +306,6 @@ export default function UserQueryModal({ isOpen: externalIsOpen, onClose: extern
                       />
                     </div>
 
-                    {/* Footer Actions */}
                     <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                       <p className="text-[11px] text-slate-500">
                         Admin replies will appear in your <strong>Profile &rarr; Concerns</strong>.

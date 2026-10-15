@@ -257,7 +257,6 @@ export default function InterviewPage() {
     return (
         <main className="relative min-h-screen overflow-hidden bg-[#f8f7ff] text-slate-900">
 
-            {/* Animated Background Blob 1 */}
             <motion.div
                 className="pointer-events-none fixed -left-32 -top-32 h-96 w-96 rounded-full bg-violet-300/30 blur-3xl"
                 animate={{
@@ -272,7 +271,6 @@ export default function InterviewPage() {
                 }}
             />
 
-            {/* Animated Background Blob 2 */}
             <motion.div
                 className="pointer-events-none fixed -right-32 top-40 h-96 w-96 rounded-full bg-indigo-300/30 blur-3xl"
                 animate={{
@@ -287,7 +285,6 @@ export default function InterviewPage() {
                 }}
             />
 
-            {/* Animated Background Blob 3 */}
             <motion.div
                 className="pointer-events-none fixed bottom-0 left-1/3 h-80 w-80 rounded-full bg-purple-300/20 blur-3xl"
                 animate={{
@@ -301,7 +298,6 @@ export default function InterviewPage() {
                 }}
             />
 
-            {/* Navbar */}
             <motion.header
                 initial={{ y: -30, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -310,7 +306,6 @@ export default function InterviewPage() {
             >
                 <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
 
-                    {/* Logo */}
                     <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-xs font-black text-white shadow-lg shadow-violet-200 sm:h-10 sm:w-10 sm:text-sm">
                             AI
@@ -325,22 +320,18 @@ export default function InterviewPage() {
                         </div>
                     </div>
 
-                    {/* Right Side */}
                     <div className="flex shrink-0 items-center gap-2 sm:gap-3">
 
-                        {/* Question badge – hidden on xs */}
                         <div className="hidden rounded-full border border-violet-200 bg-white/80 px-3 py-1.5 text-xs shadow-sm sm:block sm:px-4 sm:py-2 sm:text-sm">
                             <span className="text-slate-500">Q </span>
                             <span className="font-semibold text-violet-600">{questionNumber}</span>
                         </div>
 
-                        {/* Difficulty badge */}
                         <div className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm">
                             <span className="hidden text-slate-500 sm:inline">Difficulty: </span>
                             <span className="font-semibold text-indigo-600">{difficulty}</span>
                         </div>
 
-                        {/* Stop */}
                         <motion.button
                             onClick={stopInterview}
                             whileHover={{ scale: 1.03 }}
@@ -354,10 +345,8 @@ export default function InterviewPage() {
                 </div>
             </motion.header>
 
-            {/* Main */}
             <div className="relative z-10 mx-auto max-w-5xl px-3 py-5 sm:px-6 sm:py-10">
 
-                {/* Progress */}
                 <motion.div
                     initial={{
                         opacity: 0,
@@ -416,7 +405,6 @@ export default function InterviewPage() {
                     </div>
                 </motion.div>
 
-                {/* Question Card */}
                 <motion.section
                     initial={{
                         opacity: 0,
@@ -437,7 +425,7 @@ export default function InterviewPage() {
                 >
                     <div className="mb-4 sm:mb-7 flex items-center gap-3 sm:gap-4">
 
-                        {/* AI Icon */}
+                      
                         <motion.div
                             animate={{
                                 scale: [1, 1.05, 1],
@@ -472,7 +460,6 @@ export default function InterviewPage() {
                                 className="rounded-xl sm:rounded-2xl overflow-hidden relative"
                                 style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #0f172a 50%, #1e1b4b 100%)" }}
                             >
-                                {/* Scanline sweep */}
                                 <motion.div
                                     className="absolute inset-0 pointer-events-none"
                                     style={{ background: "linear-gradient(180deg, transparent 0%, rgba(139,92,246,0.12) 50%, transparent 100%)", height: "200%" }}
@@ -483,9 +470,7 @@ export default function InterviewPage() {
                                 <div className="relative z-10 p-5 sm:p-7">
                                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
 
-                                        {/* Orbital Spinner */}
                                         <div className="relative shrink-0 w-16 h-16 sm:w-20 sm:h-20">
-                                            {/* Outer orbit */}
                                             <motion.div
                                                 className="absolute inset-0 rounded-full border-2 border-violet-500/30"
                                                 animate={{ rotate: 360 }}
@@ -493,7 +478,6 @@ export default function InterviewPage() {
                                             >
                                                 <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-violet-400 shadow-[0_0_8px_3px_rgba(167,139,250,0.6)]" />
                                             </motion.div>
-                                            {/* Inner orbit */}
                                             <motion.div
                                                 className="absolute inset-3 rounded-full border-2 border-indigo-400/40"
                                                 animate={{ rotate: -360 }}
@@ -501,7 +485,6 @@ export default function InterviewPage() {
                                             >
                                                 <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-indigo-300 shadow-[0_0_6px_2px_rgba(129,140,248,0.7)]" />
                                             </motion.div>
-                                            {/* Core */}
                                             <motion.div
                                                 className="absolute inset-6 rounded-full bg-violet-600 flex items-center justify-center shadow-[0_0_20px_6px_rgba(139,92,246,0.4)]"
                                                 animate={{ scale: [1, 1.2, 1] }}
@@ -519,7 +502,6 @@ export default function InterviewPage() {
                                                 <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-violet-500/25 text-violet-300 border border-violet-400/30">
                                                     {difficulty}
                                                 </span>
-                                                {/* Blinking cursor */}
                                                 <motion.span
                                                     className="inline-block w-0.5 h-4 bg-violet-400 rounded"
                                                     animate={{ opacity: [1, 0, 1] }}
@@ -530,7 +512,6 @@ export default function InterviewPage() {
                                                 Analyzing resume · mapping technical skills · calibrating {difficulty} difficulty
                                             </p>
 
-                                            {/* Progress bar */}
                                             <div className="mt-3 h-1 rounded-full bg-white/10 overflow-hidden">
                                                 <motion.div
                                                     className="h-full rounded-full"
@@ -563,7 +544,6 @@ export default function InterviewPage() {
                     </AnimatePresence>
                 </motion.section>
 
-                {/* Answer Card */}
                 <motion.section
                     initial={{
                         opacity: 0,
@@ -601,7 +581,6 @@ export default function InterviewPage() {
 
                     {!evaluation && (
                         <>
-                            {/* Evaluating Answer Loading Animation — Wave Scanner */}
                             <AnimatePresence>
                                 {evaluatingAnswer && (
                                     <motion.div
@@ -611,7 +590,6 @@ export default function InterviewPage() {
                                         className="mt-4 sm:mt-5 rounded-xl sm:rounded-2xl overflow-hidden relative"
                                         style={{ background: "linear-gradient(135deg, #0c0a1e 0%, #0f172a 60%, #140c2a 100%)" }}
                                     >
-                                        {/* Horizontal scan wave */}
                                         <motion.div
                                             className="absolute top-0 left-0 right-0 h-px pointer-events-none"
                                             style={{ background: "linear-gradient(90deg, transparent, rgba(167,139,250,0.9), transparent)", boxShadow: "0 0 12px 4px rgba(139,92,246,0.5)" }}
@@ -623,7 +601,6 @@ export default function InterviewPage() {
                                             <div className="flex items-center justify-between gap-4">
                                                 <div className="flex items-center gap-3 sm:gap-4">
 
-                                                    {/* EQ / waveform bars */}
                                                     <div className="flex items-end gap-[3px] h-10 shrink-0">
                                                         {[0.4, 0.8, 0.55, 1, 0.65, 0.9, 0.45, 0.75, 0.5].map((h, i) => (
                                                             <motion.div
@@ -651,7 +628,6 @@ export default function InterviewPage() {
                                                     </div>
                                                 </div>
 
-                                                {/* Rotating scanner ring */}
                                                 <div className="relative w-9 h-9 shrink-0">
                                                     <motion.div
                                                         className="absolute inset-0 rounded-full border-2 border-violet-500/40 border-t-violet-400"
@@ -864,7 +840,6 @@ export default function InterviewPage() {
                                                     Adapting context · adjusting {evaluation?.next_difficulty || difficulty} complexity · building next challenge
                                                 </p>
 
-                                                {/* Animated token stream */}
                                                 <div className="mt-2.5 flex gap-1 flex-wrap">
                                                     {["resume_context", "chat_history", "difficulty_shift", "synthesis"].map((token, i) => (
                                                         <motion.span
@@ -885,7 +860,6 @@ export default function InterviewPage() {
                             )}
                         </AnimatePresence>
 
-                        {/* Next Question */}
                         <motion.button
                             onClick={nextQuestion}
                             disabled={generatingNextQuestion}
@@ -914,7 +888,6 @@ export default function InterviewPage() {
                     </motion.section>
                 )}
 
-                {/* Bottom Info */}
                 
             </div>
         </main>

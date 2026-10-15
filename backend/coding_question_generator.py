@@ -47,21 +47,19 @@ def safe_parse_json(text: str) -> Optional[dict]:
         return None
 
     cleaned = text.strip()
-    # Strip markdown code fences if present
     cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned, flags=re.IGNORECASE)
     cleaned = re.sub(r"\s*```$", "", cleaned)
     cleaned = cleaned.strip()
 
-    # Extract outermost JSON object { ... }
+  
     start = cleaned.find("{")
     end = cleaned.rfind("}")
     if start != -1 and end != -1 and end > start:
         cleaned = cleaned[start:end+1]
 
-    # Repair pseudo python expressions and trailing commas
     cleaned = repair_pseudo_json_expressions(cleaned)
 
-    # Attempt 1: Standard parse with strict=False (allows raw newlines & control chars in strings)
+   
     try:
         res = json.loads(cleaned, strict=False)
         if isinstance(res, dict) and "title" in res:
@@ -69,7 +67,7 @@ def safe_parse_json(text: str) -> Optional[dict]:
     except Exception:
         pass
 
-    # Attempt 2: Clean non-printable control characters that break JSON
+   
     try:
         sanitized = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', ' ', cleaned)
         res = json.loads(sanitized, strict=False)
@@ -78,7 +76,7 @@ def safe_parse_json(text: str) -> Optional[dict]:
     except Exception:
         pass
 
-    # Attempt 3: Auto-close unclosed braces if slightly truncated
+  
     try:
         open_braces = cleaned.count("{") - cleaned.count("}")
         open_brackets = cleaned.count("[") - cleaned.count("]")
@@ -309,7 +307,7 @@ def generate_coding_question(
     clean_resume = resume_text.strip() if resume_text else "Software engineering candidate skilled in algorithms and data structures."
     starter_template = get_default_starter_code(language)
 
-    # Query RAG coding knowledge base
+  
     rag_coding_context = retrieve_coding_knowledge(
         query=f"{difficulty} algorithm problem data structures",
         language=language,
@@ -401,7 +399,7 @@ Return exactly this JSON structure:
     content = ""
     parsed_q = None
 
-    # Attempt 1: Groq with json_object mode
+ 
     try:
         response = client.chat.completions.create(
             model=os.getenv("MODEL_NAME"),
@@ -431,7 +429,7 @@ Return exactly this JSON structure:
         print("Groq JSON generation notice (will retry with plain format):", err_msg[:160])
         parsed_q = None
 
-    # Attempt 2: If attempt 1 failed or could not be parsed, retry WITHOUT response_format constraint
+  
     if not parsed_q:
         try:
             print("Retrying coding question generation with flexible plain JSON format...")
@@ -467,7 +465,7 @@ Return exactly this JSON structure:
 
     question = parsed_q
 
-    # Basic validation
+   
     required_fields = [
         "title",
         "description",
@@ -480,7 +478,7 @@ Return exactly this JSON structure:
             print(f"Missing required field {field}, using fallback")
             return get_fallback_question(difficulty=difficulty, language=language)
 
-    # Normalize sample_test_cases
+  
     sample_tests = question.get("sample_test_cases") or []
     if not sample_tests and question.get("examples"):
         sample_tests = []
@@ -508,7 +506,7 @@ Return exactly this JSON structure:
             "explanation": "Default sample case"
         })
 
-    # Normalize hidden_test_cases
+   
     hidden_tests = question.get("hidden_test_cases") or []
     normalized_hidden = []
     for h in hidden_tests:
@@ -530,7 +528,7 @@ Return exactly this JSON structure:
             }
         ]
 
-    # Sync examples for backwards compatibility
+  
     examples = []
     for s in normalized_samples:
         examples.append({

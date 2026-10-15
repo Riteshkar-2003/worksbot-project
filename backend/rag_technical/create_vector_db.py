@@ -29,10 +29,10 @@ def build_technical_vector_db():
 
     emb_fn = embedding_functions.DefaultEmbeddingFunction()
 
-    # Re-initialize chroma client
+  
     client = chromadb.PersistentClient(path=str(CHROMA_DIR))
     
-    # Reset or get collection
+  
     try:
         client.delete_collection("technical_interview")
     except Exception:
@@ -60,7 +60,7 @@ def build_technical_vector_db():
     if not documents:
         raise ValueError("No .txt documents found inside rag_technical/documents")
 
-    # Add in batches
+ 
     batch_size = 50
     for i in range(0, len(documents), batch_size):
         coll.add(

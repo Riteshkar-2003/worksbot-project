@@ -185,7 +185,6 @@ public class Main {
 export default function CodingInterviewPage() {
   const router = useRouter();
 
-  // STATE
 
   const [userId, setUserId] = useState(null);
   const [question, setQuestion] = useState(null);
@@ -215,7 +214,7 @@ export default function CodingInterviewPage() {
   const [ineligibleError, setIneligibleError] = useState("");
   const [statusNotification, setStatusNotification] = useState("");
 
-  // Test Runner & Modal State
+
   const [activeConsoleTab, setActiveConsoleTab] = useState("sample_cases");
   const [selectedSampleIdx, setSelectedSampleIdx] = useState(0);
   const [copiedInputIdx, setCopiedInputIdx] = useState(null);
@@ -236,7 +235,7 @@ export default function CodingInterviewPage() {
   const lineNumbersRef = useRef(null);
   const hasStartedRef = useRef(false);
 
-  // Close custom language dropdown when clicking outside
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -254,7 +253,7 @@ export default function CodingInterviewPage() {
     };
   }, [isLangDropdownOpen]);
 
-  // EDITOR FUNCTIONS
+
 
  
 
@@ -291,9 +290,7 @@ export default function CodingInterviewPage() {
     }
   };
 
-  // =====================================================
-// CODE EDITOR SCROLLING
-// =====================================================
+
 
 const handleScroll = () => {
   const textarea = textareaRef.current;
@@ -301,21 +298,16 @@ const handleScroll = () => {
 
   if (!textarea || !lineNumbers) return;
 
-  // Keep line numbers vertically synchronized
+
   lineNumbers.scrollTop = textarea.scrollTop;
 };
 
 
-// =====================================================
-// CODE EDITOR KEYBOARD — Smart Auto-Indent
-// =====================================================
 
 const handleKeyDown = (e) => {
   const textarea = e.target;
 
-  // ---------------------------------------------------
-  // TAB = 4 SPACES  |  SHIFT+TAB = DE-INDENT LINE
-  // ---------------------------------------------------
+ 
   if (e.key === "Tab") {
     e.preventDefault();
 
@@ -324,7 +316,7 @@ const handleKeyDown = (e) => {
     const value = textarea.value;
 
     if (e.shiftKey) {
-      // SHIFT+TAB: remove up to 4 leading spaces from current line
+    
       const lineStart = value.lastIndexOf("\n", start - 1) + 1;
       const lineText  = value.slice(lineStart);
       const spaces    = lineText.match(/^ {1,4}/)?.[0] ?? "";
@@ -344,7 +336,7 @@ const handleKeyDown = (e) => {
         textareaRef.current.selectionEnd   = newPos;
       });
     } else {
-      // TAB: insert 4 spaces at cursor
+     
       const indent  = "    ";
       const newCode =
         value.slice(0, start) + indent + value.slice(end);
@@ -364,11 +356,6 @@ const handleKeyDown = (e) => {
     return;
   }
 
-  // ---------------------------------------------------
-  // CLOSING BRACE AUTO-DEDENT  (C / C++ / Java / JS)
-  // When "}" is typed on a line containing only whitespace,
-  // remove one indent level (4 spaces) before inserting "}"
-  // ---------------------------------------------------
   if (
     e.key === "}" &&
     ["c", "cpp", "java", "javascript"].includes(language)
@@ -401,18 +388,7 @@ const handleKeyDown = (e) => {
   }
 
 
-  // ---------------------------------------------------
-  // AUTO-CLOSING PAIRS  —  (, {, [, ", '
-  // Works across Python / JavaScript / C / C++ / Java
-  // Rules:
-  //   1. Typing an opener inserts opener+closer and places
-  //      cursor between them.
-  //   2. If a region is selected, wrap it with the pair.
-  //   3. If cursor is already right before the matching
-  //      closer, skip over it instead of inserting again.
-  //   4. Quotes skip auto-close after a backslash (\' or \").
-  //   5. Backspace on an empty pair deletes both characters.
-  // ---------------------------------------------------
+
   const PAIRS = { "(": ")", "{": "}", "[": "]", '"': '"', "'": "'" };
   const CLOSERS = new Set([")", "}", "]", '"', "'"]);
 
@@ -422,7 +398,7 @@ const handleKeyDown = (e) => {
     const value  = textarea.value;
     const closer = PAIRS[e.key];
 
-    // Wrap selection with the pair
+    
     if (start !== end) {
       e.preventDefault();
       const selected = value.slice(start, end);
@@ -440,12 +416,12 @@ const handleKeyDown = (e) => {
       return;
     }
 
-    // Skip auto-close for quotes after a backslash (escape sequences)
+    
     if ((e.key === '"' || e.key === "'") && value[start - 1] === "\\") {
       return;
     }
 
-    // Insert opener + closer, place cursor between them
+   
     e.preventDefault();
     const newCode =
       value.slice(0, start) +
@@ -461,11 +437,7 @@ const handleKeyDown = (e) => {
     return;
   }
 
-  // ---------------------------------------------------
-  // SKIP-OVER CLOSER
-  // Typing a closing char when the cursor is already
-  // immediately before it → move past it, don't duplicate.
-  // ---------------------------------------------------
+  
   if (CLOSERS.has(e.key)) {
     const start = textarea.selectionStart;
     const end   = textarea.selectionEnd;
@@ -483,10 +455,7 @@ const handleKeyDown = (e) => {
     }
   }
 
-  // ---------------------------------------------------
-  // BACKSPACE — delete both chars of an empty pair
-  // e.g.  (|)  →  Backspace  →  removes both ( and )
-  // ---------------------------------------------------
+ 
   if (e.key === "Backspace") {
     const start = textarea.selectionStart;
     const end   = textarea.selectionEnd;
@@ -513,20 +482,6 @@ const handleKeyDown = (e) => {
     }
   }
 
-  // ---------------------------------------------------
-  // ENTER — smart auto-indent + bracket pair expansion
-  //
-  // Case A — cursor is between an opening/closing pair:
-  //   {|}  →  {\n    |\n}   (cursor on indented middle line)
-  //   (|)  →  (\n    |\n)
-  //   [|]  →  [\n    |\n]
-  //
-  // Case B — line ends with a block-opener token:
-  //   Python  ":" → next line gets +4 spaces
-  //   C/C++/Java/JS "{" → next line gets +4 spaces
-  //
-  // Case C — all other lines: preserve existing indentation
-  // ---------------------------------------------------
   if (e.key === "Enter") {
     e.preventDefault();
 
@@ -534,24 +489,23 @@ const handleKeyDown = (e) => {
     const end      = textarea.selectionEnd;
     const value    = textarea.value;
 
-    // Characters immediately around the cursor
+    
     const charBefore = value[start - 1] ?? "";
     const charAfter  = value[start]     ?? "";
 
-    // Bracket pairs that trigger expansion
+    
     const EXPAND_PAIRS = { "{": "}", "(": ")", "[": "]" };
 
-    // Find the beginning of the current line
+   
     const lineStart   = value.lastIndexOf("\n", start - 1) + 1;
     const currentLine = value.slice(lineStart, start);
 
-    // Preserve existing leading whitespace
+    
     const leadingWS   = currentLine.match(/^(\s*)/)[1];
 
-    // ── Case A: cursor is inside an empty bracket pair ──
+    
     if (EXPAND_PAIRS[charBefore] === charAfter) {
-      // Insert:  \n<indent+4>  \n<indent>
-      // Cursor lands on the middle (indented) line
+      
       const innerLine  = "\n" + leadingWS + "    ";
       const closerLine = "\n" + leadingWS;
       const insertion  = innerLine + closerLine;
@@ -565,7 +519,6 @@ const handleKeyDown = (e) => {
 
       requestAnimationFrame(() => {
         if (!textareaRef.current) return;
-        // Place cursor at end of the inner (middle) line
         const newCursor = start + innerLine.length;
         textareaRef.current.selectionStart = newCursor;
         textareaRef.current.selectionEnd   = newCursor;
@@ -586,16 +539,16 @@ const handleKeyDown = (e) => {
       return;
     }
 
-    // ── Case B & C: regular indent ──
+   
     const trimmed = currentLine.trimEnd();
     let extraIndent = "";
 
-    // Python: indent after ":"
+   
     if (language === "python" && trimmed.endsWith(":")) {
       extraIndent = "    ";
     }
 
-    // C / C++ / Java / JS: indent after "{"
+   
     if (
       ["c", "cpp", "java", "javascript"].includes(language) &&
       trimmed.endsWith("{")
@@ -635,7 +588,7 @@ const handleKeyDown = (e) => {
 };
 
 
-  // START INTERVIEW
+  
 
 
   useEffect(() => {
@@ -751,11 +704,11 @@ const handleKeyDown = (e) => {
 
     startInterview();
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, []);
 
 
-  // RUN CODE (VISIBLE SAMPLE TESTS)
+  
 
 
   const handleRunCode = async () => {
@@ -791,7 +744,7 @@ const handleKeyDown = (e) => {
   };
 
 
-  // SUBMIT ANSWER (SAMPLE + HIDDEN TEST CASES)
+  
 
   const handleSubmit = async () => {
     if (!question) {
@@ -854,7 +807,7 @@ const handleKeyDown = (e) => {
         });
       }
 
-      // Track completed test attendance so user can end interview once at least 1 solution is submitted
+     
       const newSubmittedCount = data.completed_count || (submittedCount + 1);
       setSubmittedCount(newSubmittedCount);
       sessionStorage.setItem("codingSubmittedCount", String(newSubmittedCount));
@@ -905,7 +858,7 @@ const handleKeyDown = (e) => {
   };
 
 
-  // STOP INTERVIEW
+  
 
   const handleStopInterview = async () => {
     const currentUserId =
@@ -919,7 +872,7 @@ const handleKeyDown = (e) => {
       return;
     }
 
-    // REQUIRE AT LEAST ONE CODING TEST ATTENDED & SUBMITTED
+   
     if (submittedCount === 0) {
       alert("Please attend and submit at least one coding question before stopping the interview.");
       return;
@@ -1000,14 +953,14 @@ const handleKeyDown = (e) => {
   };
 
 
-  // LOADING SCREEN
+  
 
   if (loading) {
     return (
       <div className="min-h-screen relative overflow-hidden flex items-center justify-center" style={{ background: "#07071a" }}>
         <AnimatedBackground />
 
-        {/* Dot grid background */}
+        
         <div
           className="absolute inset-0 pointer-events-none opacity-15"
           style={{
@@ -1016,7 +969,7 @@ const handleKeyDown = (e) => {
           }}
         />
 
-        {/* Diagonal light sweep */}
+       
         <motion.div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -1032,30 +985,26 @@ const handleKeyDown = (e) => {
           transition={{ duration: 0.7 }}
           className="relative z-10 flex flex-col items-center text-center px-6 max-w-md"
         >
-          {/* Gear-ring loader */}
+          
           <div className="relative w-28 h-28 mb-8">
-            {/* Outer slow ring */}
             <motion.div
               className="absolute inset-0 rounded-full"
               style={{ border: "3px solid transparent", borderTopColor: "rgba(139,92,246,0.9)", borderRightColor: "rgba(99,102,241,0.4)" }}
               animate={{ rotate: 360 }}
               transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
             />
-            {/* Mid ring opposite */}
             <motion.div
               className="absolute inset-4 rounded-full"
               style={{ border: "2px solid transparent", borderBottomColor: "rgba(167,139,250,0.9)", borderLeftColor: "rgba(99,102,241,0.3)" }}
               animate={{ rotate: -360 }}
               transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
             />
-            {/* Inner fast ring */}
             <motion.div
               className="absolute inset-8 rounded-full"
               style={{ border: "2px solid transparent", borderTopColor: "rgba(196,181,253,1)", borderRightColor: "rgba(139,92,246,0.5)" }}
               animate={{ rotate: 360 }}
               transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
             />
-            {/* Core glow */}
             <motion.div
               className="absolute inset-11 rounded-full flex items-center justify-center"
               style={{ background: "radial-gradient(circle, rgba(139,92,246,0.9), rgba(99,102,241,0.6))" }}
@@ -1064,7 +1013,6 @@ const handleKeyDown = (e) => {
             >
               <Code2 className="w-4 h-4 text-white" />
             </motion.div>
-            {/* Orbit dot */}
             <motion.div
               className="absolute w-3 h-3 rounded-full bg-violet-300 shadow-[0_0_10px_4px_rgba(167,139,250,0.7)]"
               style={{ top: -2, left: "calc(50% - 6px)" }}
@@ -1080,8 +1028,6 @@ const handleKeyDown = (e) => {
           <p className="text-slate-400 text-sm mb-8 leading-relaxed">
             AI is analyzing your resume and generating a personalized coding problem.
           </p>
-
-          {/* Animated step indicators */}
           <div className="flex flex-col gap-2 w-full max-w-xs">
             {[
               { label: "Initializing session", delay: 0 },
@@ -1118,7 +1064,7 @@ const handleKeyDown = (e) => {
   }
 
 
-  // INELIGIBLE SCREEN (LACKS PYTHON, JAVA, JAVASCRIPT, C++, C)
+  
   if (ineligibleError) {
     return (
       <div className="min-h-screen relative overflow-hidden bg-[#f8f7ff] flex items-center justify-center p-6">
@@ -1167,7 +1113,7 @@ const handleKeyDown = (e) => {
     );
   }
 
-  // ERROR SCREEN
+ 
 
   if (error && !question) {
     return (
@@ -1229,7 +1175,6 @@ const handleKeyDown = (e) => {
     SUPPORTED_LANGUAGES[0];
 
 
-  // MAIN UI
 
 
   return (
@@ -1246,7 +1191,7 @@ const handleKeyDown = (e) => {
 
             <div className="flex items-center justify-between gap-3">
 
-              {/* Brand */}
+            
               <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
 
                 <motion.div
@@ -1275,7 +1220,7 @@ const handleKeyDown = (e) => {
                 </div>
               </div>
 
-              {/* Header Actions */}
+            
               <div className="flex shrink-0 items-center gap-2 sm:gap-3">
 
                 <button
@@ -1397,7 +1342,7 @@ const handleKeyDown = (e) => {
 
                 <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white shadow-xl shadow-violet-100/40 overflow-hidden">
 
-                  {/* Question Header */}
+                  
                   <div className="p-5 sm:p-7 border-b border-slate-100">
 
                     <div className="flex flex-col sm:flex-row justify-between gap-4">
@@ -1434,7 +1379,7 @@ const handleKeyDown = (e) => {
 
                   </div>
 
-                  {/* Question Details  */}
+                  
                   <div className="p-5 sm:p-7 grid grid-cols-1 lg:grid-cols-2 gap-5">
 
                     {question.input_format && (
@@ -1491,9 +1436,9 @@ const handleKeyDown = (e) => {
 
                   </div>
 
-                  {/* Test Cases Overview: Visible Sample Tests vs. Hidden Test Cases */}
+                
                   <div className="px-5 sm:px-7 pb-7 space-y-6">
-                    {/* Header */}
+                   
                     <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-100">
                       <div className="flex items-center gap-2">
                         <div className="w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center">
@@ -1515,7 +1460,7 @@ const handleKeyDown = (e) => {
                       </div>
                     </div>
 
-                    {/* Visible Sample Cases Grid */}
+                    
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {((question.sample_test_cases && question.sample_test_cases.length > 0)
                         ? question.sample_test_cases
@@ -1569,7 +1514,7 @@ const handleKeyDown = (e) => {
                       })}
                     </div>
 
-                    {/* Hidden Test Cases Security Notice Banner */}
+                   
                     <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-violet-50/90 via-indigo-50/80 to-purple-50/90 border border-indigo-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
                       <div className="flex items-start gap-3.5">
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-md shadow-violet-200">
@@ -1622,27 +1567,22 @@ const handleKeyDown = (e) => {
 
             <div className="rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50 border border-slate-200 bg-white ring-1 ring-slate-100">
 
-              {/* Editor Header */}
-             
-
-              {/* Editor */}
+              
               <div className="rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50 border border-slate-200 bg-white ring-1 ring-slate-100">
 
-                {/* =================================================
-      EDITOR HEADER
-  ================================================= */}
+                
 
                 <div className="px-3 sm:px-5 py-3 bg-slate-50/90 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 border-b border-slate-200">
 
                   <div className="flex flex-wrap items-center gap-2 sm:gap-3">
 
-                    {/* File name */}
+                 
                     <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 bg-white text-indigo-700 rounded-xl text-xs font-mono font-bold border border-slate-200 shadow-sm">
                       <FileCode2 className="w-3.5 h-3.5 text-indigo-600" />
                       <span>{activeLangConfig.file}</span>
                     </div>
 
-                    {/* Custom Language Selector Dropdown (Fully Responsive: Mobile, Tablet, Laptop 1080px, 1440px) */}
+                  
                     <div className="relative" ref={langDropdownRef}>
                       <button
                         type="button"
@@ -1671,11 +1611,11 @@ const handleKeyDown = (e) => {
                         />
                       </button>
 
-                      {/* Dropdown Menu Popover (Fully Responsive: Mobile Floating Sheet, Tablet/Desktop Floating Dropdown) */}
+                     
                       <AnimatePresence>
                         {isLangDropdownOpen && (
                           <>
-                            {/* Mobile overlay backdrop */}
+                          
                             <motion.div
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
@@ -1691,7 +1631,7 @@ const handleKeyDown = (e) => {
                               transition={{ duration: 0.18, ease: "easeOut" }}
                               className="fixed inset-x-3 bottom-3 sm:bottom-auto sm:inset-x-auto sm:absolute sm:left-0 sm:top-full sm:mt-2 w-auto sm:w-80 max-w-sm rounded-3xl sm:rounded-2xl bg-white border border-slate-200/90 shadow-2xl shadow-slate-950/25 p-2.5 sm:p-2 z-50 backdrop-blur-xl"
                             >
-                              {/* Mobile handle indicator */}
+                             
                               <div className="w-10 h-1 rounded-full bg-slate-200 mx-auto mb-2 sm:hidden" />
 
                               <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between">
@@ -1772,8 +1712,7 @@ const handleKeyDown = (e) => {
                   </div>
 
 
-                  {/* Editor actions */}
-
+                 
                   <div className="flex items-center gap-2">
 
                     <button
@@ -1825,15 +1764,11 @@ const handleKeyDown = (e) => {
                 </div>
 
 
-                {/* =================================================
-      CODE AREA
-  ================================================= */}
+                
 
                 <div className="relative flex w-full bg-white font-mono text-sm leading-6">
 
-                  {/* ===============================================
-        LINE NUMBERS
-    =============================================== */}
+                 
 
                   <div
                     ref={lineNumbersRef}
@@ -1868,9 +1803,7 @@ const handleKeyDown = (e) => {
                   </div>
 
 
-                  {/* ===============================================
-        TEXTAREA
-    =============================================== */}
+                 
 
                   <textarea
                     ref={textareaRef}
@@ -1962,7 +1895,7 @@ const handleKeyDown = (e) => {
             className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-between gap-4 mb-6"
           >
             <div className="flex flex-wrap items-center gap-3">
-              {/* Run Code */}
+             
               <motion.button
                 whileHover={{
                   scale: running || submitting || stopping ? 1 : 1.02,
@@ -1994,7 +1927,7 @@ const handleKeyDown = (e) => {
                 )}
               </motion.button>
 
-              {/* Submit */}
+            
               <motion.button
                 whileHover={{
                   scale: submitting || running || stopping ? 1 : 1.02,
@@ -2040,7 +1973,7 @@ const handleKeyDown = (e) => {
             </div>
           </motion.div>
 
-          {/* Running Code Animated Status Card */}
+         
           <AnimatePresence>
             {running && (
               <motion.div
@@ -2091,7 +2024,7 @@ const handleKeyDown = (e) => {
             )}
           </AnimatePresence>
 
-          {/* Submitting Code Animated Status Card */}
+        
           <AnimatePresence>
             {submitting && (
               <motion.div
@@ -2187,7 +2120,7 @@ const handleKeyDown = (e) => {
                 className="mb-10"
               >
                 <div className="rounded-3xl overflow-hidden bg-[#1a1b26] shadow-2xl shadow-slate-300/30 border border-gray-800">
-                  {/* Console Header with Tabs */}
+                 
                   <div className="px-5 py-3.5 border-b border-gray-800 flex flex-wrap items-center justify-between gap-3 bg-[#13141c]">
                     <div className="flex items-center gap-2">
                       {result.sample_results && result.sample_results.length > 0 && (
@@ -2263,12 +2196,12 @@ const handleKeyDown = (e) => {
                     </div>
                   </div>
 
-                  {/* Console Body */}
+                
                   <div className="p-5">
-                    {/* View 1: Interactive Sample Test Cases Breakdown */}
+                   
                     {activeConsoleTab === "sample_cases" && result.sample_results && result.sample_results.length > 0 && (
                       <div className="space-y-4">
-                        {/* Case Selector Pills */}
+                      
                         <div className="flex flex-wrap items-center gap-2 border-b border-gray-800/80 pb-3">
                           {result.sample_results.map((c, idx) => (
                             <button
@@ -2297,7 +2230,7 @@ const handleKeyDown = (e) => {
                           ))}
                         </div>
 
-                        {/* Selected Case Details */}
+                      
                         {(() => {
                           const currentCase =
                             result.sample_results[selectedSampleIdx] ||
@@ -2314,7 +2247,7 @@ const handleKeyDown = (e) => {
                               </div>
 
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                {/* Input */}
+                             
                                 <div className="space-y-1.5">
                                   <span className="text-xs font-bold text-gray-400 block font-mono">
                                     Input
@@ -2324,7 +2257,7 @@ const handleKeyDown = (e) => {
                                   </pre>
                                 </div>
 
-                                {/* Expected Output */}
+                                
                                 <div className="space-y-1.5">
                                   <span className="text-xs font-bold text-gray-400 block font-mono">
                                     Expected Output
@@ -2334,7 +2267,7 @@ const handleKeyDown = (e) => {
                                   </pre>
                                 </div>
 
-                                {/* Your Output */}
+                              
                                 <div className="space-y-1.5">
                                   <span className="text-xs font-bold text-gray-400 block font-mono">
                                     Your Output
@@ -2370,7 +2303,7 @@ const handleKeyDown = (e) => {
                       </div>
                     )}
 
-                    {/* View 2: Raw Terminal Output */}
+                 
                     {(activeConsoleTab === "console" || !result.sample_results) && (
                       <div className="space-y-4">
                         {result.stdout && (
@@ -2408,7 +2341,7 @@ const handleKeyDown = (e) => {
             )}
           </AnimatePresence>
 
-          {/* Submission Evaluation Modal (Sample Tests + Hidden Test Cases) */}
+         
           <AnimatePresence>
             {submissionModalData && (
               <motion.div
@@ -2423,7 +2356,7 @@ const handleKeyDown = (e) => {
                   exit={{ scale: 0.95, opacity: 0, y: 20 }}
                   className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl border border-slate-100 flex flex-col"
                 >
-                  {/* Modal Header */}
+                  
                   <div className="p-6 bg-gradient-to-r from-violet-600 to-indigo-600 text-white flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-violet-200">
@@ -2448,11 +2381,11 @@ const handleKeyDown = (e) => {
                     </button>
                   </div>
 
-                  {/* Modal Content */}
+                 
                   <div className="p-6 overflow-y-auto space-y-6">
                     {submissionModalData.test_summary && (
                       <>
-                        {/* Overall Verdict Banner */}
+                       
                         <div
                           className={`p-4 rounded-2xl border flex items-center justify-between gap-4 ${submissionModalData.test_summary.all_passed
                               ? "bg-emerald-50 border-emerald-200 text-emerald-900"
@@ -2489,9 +2422,9 @@ const handleKeyDown = (e) => {
                           </span>
                         </div>
 
-                        {/* Two Columns: Visible vs Hidden Tests */}
+                       
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          {/* Column 1: Visible Sample Tests */}
+                       
                           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                             <div className="flex items-center justify-between mb-3">
                               <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
@@ -2531,7 +2464,7 @@ const handleKeyDown = (e) => {
                             </div>
                           </div>
 
-                          {/* Column 2: Hidden Test Cases */}
+                        
                           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                             <div className="flex items-center justify-between mb-3">
                               <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
@@ -2578,7 +2511,7 @@ const handleKeyDown = (e) => {
                       </>
                     )}
 
-                    {/* AI Feedback Preview */}
+                 
                     {submissionModalData.evaluation && (
                       <div className="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100 space-y-3">
                         <div className="flex items-center justify-between">
@@ -2614,7 +2547,7 @@ const handleKeyDown = (e) => {
 
                   </div>
 
-                  {/* Modal Footer */}
+                
                   <div className="p-4 sm:p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
                     <button
                       onClick={() => setSubmissionModalData(null)}
@@ -2691,7 +2624,7 @@ function AnimatedBackground() {
 }
 
 
-// QUESTION INFO CARD
+
 
 function InfoCard({ title, value }) {
   return (

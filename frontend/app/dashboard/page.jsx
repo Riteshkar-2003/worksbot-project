@@ -119,7 +119,6 @@ export default function Dashboard() {
     });
 
 
-    // INITIALIZE SESSION
 
 
     useEffect(() => {
@@ -168,7 +167,6 @@ export default function Dashboard() {
     }, []);
 
 
-    // FILE CHANGE
 
 
     const handleFileChange = (event) => {
@@ -197,7 +195,6 @@ export default function Dashboard() {
     };
 
 
-    // CLEAR RESUME
 
 
     const handleClearResume = () => {
@@ -210,13 +207,11 @@ export default function Dashboard() {
     };
 
 
-    // LOGOUT
 
 
     
 
 
-    // START INTERVIEW
 
 
     const handleStartInterview = async (
@@ -236,7 +231,6 @@ export default function Dashboard() {
         try {
             setLoading(true);
 
-            // Upload new resume
             if (resumeFile) {
                 const data = await uploadResume(resumeFile, user?.id || 1);
 
@@ -288,13 +282,11 @@ export default function Dashboard() {
                 }
             }
 
-            // Save difficulty
             sessionStorage.setItem(
                 "difficulty",
                 difficulty
             );
 
-            // Check user
             const storedUser =
                 localStorage.getItem("user");
 
@@ -323,7 +315,7 @@ export default function Dashboard() {
                 );
             }
 
-            // Navigate
+            
             if (interviewType === "coding") {
                 const currentResumeData = JSON.parse(
                     sessionStorage.getItem("resumeData") || "{}"
@@ -507,7 +499,6 @@ export default function Dashboard() {
                     "
                 >
 
-                    {/* LOGO */}
 
                     <div className="flex min-w-0 items-center gap-2.5">
 
@@ -570,18 +561,14 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    {/* USER & HISTORY */}
 
                     <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5">
-                        {/* RAISE QUERY TAB */}
                         
 
-                        {/* ADMIN PORTAL LINK */}
                        
 
                         {user ? (
                             <div className="flex items-center gap-2 sm:gap-3">
-                                {/* PROFILE */}
                                 <button
                                     onClick={() => router.push("/profile")}
                                     className="p-2 sm:p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition shrink-0 active:scale-95"
@@ -589,7 +576,6 @@ export default function Dashboard() {
                                 >
                                     <FaArrowRight className="text-xs sm:text-sm" />
                                 </button>
-                                {/* LOGOUT */}
                                 
 
                             </div>
@@ -795,7 +781,6 @@ export default function Dashboard() {
                             "
                         >
 
-                            {/* HEADER */}
 
                             <div
                                 className="
@@ -1399,7 +1384,6 @@ export default function Dashboard() {
                             </div>
                         </div>
 
-                        {/* INTERVIEW ACTION CARD */}
 
                         <div
                             className="
@@ -1442,7 +1426,6 @@ export default function Dashboard() {
 
 
 
-                            {/* ELIGIBILITY STATUS BANNER */}
                             {hasResumeReady && codingEligibility.checked && (
                                 <div className="mt-3">
                                     {codingEligibility.isEligible ? (
@@ -1473,7 +1456,6 @@ export default function Dashboard() {
 
                             <div className="mt-4 space-y-3">
 
-                                {/* CODING INTERVIEW */}
 
                                 <motion.button
                                     type="button"
@@ -1618,7 +1600,6 @@ export default function Dashboard() {
                                         )}
                                 </motion.button>
 
-                                {/* TECHNICAL INTERVIEW */}
 
                                 <motion.button
                                     type="button"
@@ -1760,7 +1741,6 @@ export default function Dashboard() {
                                 </motion.button>
                             </div>
 
-                            {/* NO RESUME MESSAGE */}
 
                             {!hasResumeReady && (
                                 <p
@@ -1785,7 +1765,6 @@ export default function Dashboard() {
                 </div>
             </section>
 
-            {/* Query & Concerns Modal */}
             <UserQueryModal
                 isOpen={isQueryModalOpen}
                 onClose={() => setIsQueryModalOpen(false)}

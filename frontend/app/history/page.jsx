@@ -35,7 +35,7 @@ export default function InterviewHistoryPage() {
     coding_history: [],
   });
 
-  const [activeTab, setActiveTab] = useState("all"); // "all" | "technical" | "coding"
+  const [activeTab, setActiveTab] = useState("all"); 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDifficulty, setSelectedDifficulty] = useState("all");
   const [selectedLanguage, setSelectedLanguage] = useState("all");
@@ -82,7 +82,6 @@ export default function InterviewHistoryPage() {
 
   useEffect(() => {
     fetchHistory();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   useEffect(() => {
@@ -107,7 +106,6 @@ export default function InterviewHistoryPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  // Filtered technical items
   const filteredTechnical = useMemo(() => {
     return (historyData.technical_history || []).filter((item) => {
       const qText = (item.question || "").toLowerCase();
@@ -130,7 +128,6 @@ export default function InterviewHistoryPage() {
     });
   }, [historyData.technical_history, searchQuery, selectedDifficulty]);
 
-  // Filtered coding items
   const filteredCoding = useMemo(() => {
     return (historyData.coding_history || []).filter((item) => {
       const tText = (item.title || "").toLowerCase();
@@ -164,7 +161,6 @@ export default function InterviewHistoryPage() {
     selectedLanguage,
   ]);
 
-  // Combined stats
   const stats = useMemo(() => {
     const techCount = historyData.technical_history.length;
     const codingCount = historyData.coding_history.length;
@@ -229,14 +225,12 @@ export default function InterviewHistoryPage() {
 
   return (
     <div className="min-h-screen bg-[#f8f7ff] text-slate-800 relative overflow-x-hidden">
-      {/* Background decoration */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-violet-200/40 rounded-full blur-3xl" />
         <div className="absolute top-[20%] right-[-10%] w-[450px] h-[450px] bg-indigo-200/30 rounded-full blur-3xl" />
         <div className="absolute bottom-[-10%] left-[20%] w-[600px] h-[600px] bg-purple-200/25 rounded-full blur-3xl" />
       </div>
 
-      {/* NAVBAR */}
       <header className="sticky top-0 z-40 border-b border-white/80 bg-white/70 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -285,9 +279,7 @@ export default function InterviewHistoryPage() {
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
       <main className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-6 lg:space-y-8">
-        {/* HERO / STATS SECTION */}
         <section className="bg-gradient-to-r from-violet-700 via-indigo-700 to-purple-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 text-white shadow-xl shadow-indigo-900/10 relative overflow-hidden">
           <div className="absolute right-[-40px] top-[-40px] w-56 h-56 bg-white/10 rounded-full blur-2xl pointer-events-none" />
 
@@ -307,7 +299,6 @@ export default function InterviewHistoryPage() {
               </p>
             </div>
 
-            {/* Quick Stat Tiles - 2 cols on mobile, 4 cols on tablet & desktop */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 w-full lg:w-auto">
               <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 border border-white/15 text-center flex flex-col justify-center items-center">
                 <div className="flex items-center gap-1.5 text-violet-200 mb-0.5">
@@ -364,10 +355,8 @@ export default function InterviewHistoryPage() {
           </div>
         </section>
 
-        {/* TABS & SEARCH CONTROLS */}
         <section className="bg-white/80 backdrop-blur-xl rounded-2xl p-3 sm:p-4 border border-white/90 shadow-sm space-y-3 sm:space-y-4">
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4">
-            {/* Nav Tabs (Smooth horizontal touch scrolling on mobile) */}
             <div className="flex items-center gap-1 sm:gap-1.5 p-1 bg-slate-100/90 rounded-xl overflow-x-auto no-scrollbar scroll-smooth">
               <button
                 onClick={() => setActiveTab("all")}
@@ -415,7 +404,6 @@ export default function InterviewHistoryPage() {
               </button>
             </div>
 
-            {/* Search & Filters */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full lg:w-auto">
               <div className="relative flex-1 sm:w-56 md:w-64 lg:w-72">
                 <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
@@ -459,7 +447,6 @@ export default function InterviewHistoryPage() {
           </div>
         </section>
 
-        {/* LOADING & ERROR STATES */}
         {loading && (
           <div className="py-24 text-center space-y-4">
             <div className="w-12 h-12 rounded-full border-4 border-violet-200 border-t-violet-600 animate-spin mx-auto" />
@@ -485,7 +472,6 @@ export default function InterviewHistoryPage() {
           </div>
         )}
 
-        {/* EMPTY STATE */}
         {!loading &&
           !error &&
           stats.totalCount === 0 && (
@@ -522,12 +508,8 @@ export default function InterviewHistoryPage() {
             </div>
           )}
 
-        {/* RECORDS DISPLAY */}
         {!loading && !error && stats.totalCount > 0 && (
           <div className="space-y-8">
-            {/* ======================================================== */}
-            {/* TECHNICAL INTERVIEW SECTION */}
-            {/* ======================================================== */}
             {(activeTab === "all" || activeTab === "technical") && (
               <section className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -565,7 +547,6 @@ export default function InterviewHistoryPage() {
                           key={cardId}
                           className="bg-white/90 backdrop-blur-xl rounded-2xl border border-white/90 p-5 shadow-sm space-y-4 hover:shadow-md transition"
                         >
-                          {/* Card Header */}
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-slate-100">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="px-2.5 py-1 rounded-md bg-violet-100 text-violet-700 font-bold text-xs">
@@ -604,7 +585,6 @@ export default function InterviewHistoryPage() {
                             </div>
                           </div>
 
-                          {/* Question Text */}
                           <div>
                             <span className="text-[10px] font-bold tracking-wider uppercase text-violet-600 block mb-1">
                               Question Prompt
@@ -614,10 +594,8 @@ export default function InterviewHistoryPage() {
                             </h4>
                           </div>
 
-                          {/* Answers Side-by-Side or Stacked */}
                           {isExpanded && (
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 pt-1">
-                              {/* Candidate Answer */}
                               <div className="rounded-xl bg-slate-50 border border-slate-200/80 p-3.5 sm:p-4 space-y-2 flex flex-col justify-between">
                                 <div>
                                   <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -635,7 +613,6 @@ export default function InterviewHistoryPage() {
                                 </div>
                               </div>
 
-                              {/* Correct Answer (Ground Truth RAG) */}
                               <div className="rounded-xl bg-emerald-50/70 border border-emerald-200 p-3.5 sm:p-4 space-y-2 flex flex-col justify-between">
                                 <div>
                                   <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -659,7 +636,6 @@ export default function InterviewHistoryPage() {
                             </div>
                           )}
 
-                          {/* Evaluation Breakdown if present */}
                           {isExpanded && item.evaluation && (
                             <div className="rounded-xl bg-indigo-50/60 border border-indigo-100 p-3.5 space-y-2 text-xs">
                               <span className="font-bold text-indigo-950 flex items-center gap-1.5">
@@ -699,9 +675,6 @@ export default function InterviewHistoryPage() {
               </section>
             )}
 
-            {/* ======================================================== */}
-            {/* CODING INTERVIEW SECTION */}
-            {/* ======================================================== */}
             {(activeTab === "all" || activeTab === "coding") && (
               <section className="space-y-4 pt-4">
                 <div className="flex items-center justify-between">
@@ -741,7 +714,6 @@ export default function InterviewHistoryPage() {
                           key={cardId}
                           className="bg-white/90 backdrop-blur-xl rounded-2xl border border-white/90 p-4 sm:p-5 shadow-sm space-y-4 hover:shadow-md transition"
                         >
-                          {/* Card Header */}
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-slate-100">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-sm sm:text-base font-bold text-slate-900">
@@ -795,7 +767,6 @@ export default function InterviewHistoryPage() {
                             </div>
                           </div>
 
-                          {/* Problem Description & Constraints */}
                           {item.description && (
                             <div className="bg-slate-50/70 p-3 sm:p-3.5 rounded-xl border border-slate-100 text-xs text-slate-700 space-y-2">
                               <span className="font-bold text-slate-900 block">
@@ -813,10 +784,8 @@ export default function InterviewHistoryPage() {
                             </div>
                           )}
 
-                          {/* Code Comparison (Candidate Code vs Correct Answer) */}
                           {isExpanded && (
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 pt-1">
-                              {/* Candidate Code */}
                               <div className="rounded-xl bg-slate-900 text-slate-100 p-3.5 sm:p-4 border border-slate-800 space-y-2 flex flex-col justify-between">
                                 <div>
                                   <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-800">
@@ -845,7 +814,6 @@ export default function InterviewHistoryPage() {
                                 )}
                               </div>
 
-                              {/* Correct Answer (Reference Solution) */}
                               <div className="rounded-xl bg-slate-950 text-emerald-400 p-3.5 sm:p-4 border border-emerald-900/40 space-y-2 flex flex-col justify-between">
                                 <div>
                                   <div className="flex items-center justify-between gap-2 pb-2 border-b border-emerald-900/40">
@@ -892,7 +860,6 @@ export default function InterviewHistoryPage() {
                             </div>
                           )}
 
-                          {/* Feedback preview */}
                           {isExpanded && item.feedback && (
                             <div className="rounded-xl bg-indigo-50/70 border border-indigo-100 p-3.5 text-xs text-slate-700 space-y-1">
                               <span className="font-bold text-indigo-900 block">
@@ -912,7 +879,6 @@ export default function InterviewHistoryPage() {
         )}
       </main>
 
-      {/* FLOATING BACK TO TOP BUTTON FOR MOBILE & TABLET */}
       <AnimatePresence>
         {showScrollTop && (
           <motion.button
