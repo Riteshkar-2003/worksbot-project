@@ -234,7 +234,11 @@ export default function InterviewPage() {
     };
 
     const stopInterview = async () => {
+<<<<<<< HEAD
         if (history.length >= 10) {
+=======
+        if (history.length === 10) {
+>>>>>>> eac61da21584755bea8646d65d97bc62c622876b
             alert(
                 `Please answer at least 10 questions before stopping the interview. You have answered ${history.length} question(s).`
             );

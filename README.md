@@ -1,5 +1,6 @@
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 An intelligent, adaptive AI-powered interview preparation platform that conducts resume-based technical interviews and coding assessments, evaluates answers in real-time, and generates detailed performance reports.
 
 ---
@@ -344,5 +345,7 @@ Documents are embedded and stored locally in chroma_db/ subdirectories. Run crea
 ---
 
 Built using FastAPI, Next.js, LangChain, Groq, Judge0, and ChromaDB.
+=======
+>>>>>>> eac61da21584755bea8646d65d97bc62c622876b
 =======
 >>>>>>> eac61da21584755bea8646d65d97bc62c622876b
